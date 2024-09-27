@@ -84,15 +84,8 @@ struct bomb_link
 };
 typedef struct bomb_link *bomb_list;
 
-typedef struct action_bundle{
-  action a;
-  int* pos_x;
-  int* pos_y;
-  int length;
-} action_bundle;
-
 /*
   Function to code (see player.c)
 */
-action_bundle* lode_runner(levelinfo, character_list, bonus_list, bomb_list);
+action lode_runner(levelinfo, character_list, bonus_list, bomb_list);
 
