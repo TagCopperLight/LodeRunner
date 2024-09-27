@@ -29,6 +29,13 @@ typedef struct min_heap{
   float* priority; // Prioritee des elements
 } min_heap;
 
+typedef struct path{ // Structure qui contient les informations que renvoie A*
+  min_heap* heap;
+  int* p;
+  int* d;
+  bool found;
+} path;
+
 // Local prototypes (add your own prototypes below)
 // Tas-min, afin de pouvoir faire de la recherche de chemin intelligente, https://fr.wikipedia.org/wiki/Tas_binaire
 min_heap* create_min_heap(int);
@@ -56,6 +63,7 @@ bool is_valid(int, action, levelinfo); // Verifie si une action est valide
 int weight(action); // Valeur d'une action, utilise pour le calcul de la priorite
 int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effectue une action
 action get_action(int, int, levelinfo); // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
+path* a_star(character_list, bonus_list, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
 
 
 min_heap* create_min_heap(int capacity){
@@ -403,14 +411,7 @@ character_list get_closest_enemy(character_list characterl, character_list runne
   return closest_enemy;
 }
 
-typedef struct path{
-  min_heap* heap;
-  int* p;
-  int* d;
-  bool found;
-} path;
-
-path* a_star(action_bundle* bundle, levelinfo level, character_list runner, bonus_list closest_bonus){
+path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
   path* pat = malloc(sizeof(path));
 
   pat->heap = create_min_heap(100);
@@ -431,7 +432,6 @@ path* a_star(action_bundle* bundle, levelinfo level, character_list runner, bonu
     int u = extract_min(pat->heap);
 
     if(u == closest_bonus->b.y * level.xsize + closest_bonus->b.x){
-      bundle = create_action_bundle(bundle, NONE, pat->p, runner->c.y * level.xsize + runner->c.x, u, level.xsize, level.ysize);
       pat->found = true;
       break;
     }
@@ -487,19 +487,9 @@ child find_closest_child(int* p, int origin, int destination, levelinfo level){
   }
 }
 
-void print_map(levelinfo level){
-  for(int i = 0; i < level.ysize; i++){
-    for(int j = 0; j < level.xsize; j++){
-      printf("%c", level.map[i][j]);
-    }
-    printf("\n");
-  }
-}
-
-action_bundle* lode_runner(levelinfo level, character_list characterl, bonus_list bonusl, bomb_list bombl){
+action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl, bomb_list bombl){
   character_list runner = get_runner(characterl);
   level = add_enemies(level, characterl, bombl);
-  // print_map(level);
   
   // printf("Runner: %d %d %d\n", runner->c.x, runner->c.y, runner->c.y * level.xsize + runner->c.x);	
 
@@ -514,7 +504,6 @@ action_bundle* lode_runner(levelinfo level, character_list characterl, bonus_lis
     to_exit = true;
   }
 
-  action_bundle* bundle = bundle_init();
   int v;
   int move_to_closest = -1;
   int move_to_combat = -1;
@@ -533,7 +522,7 @@ action_bundle* lode_runner(levelinfo level, character_list characterl, bonus_lis
       continue;
     }
 
-    path* pat = a_star(bundle, level, runner, closest_bonus);
+    path* pat = a_star(runner, closest_bonus, level);
 
     if(pat->found){
       // printf("Found from A*\n");
@@ -595,14 +584,10 @@ action_bundle* lode_runner(levelinfo level, character_list characterl, bonus_lis
   }
 
   if(v != -1){
-    action next_move = get_action(runner->c.y * level.xsize + runner->c.x, v, level);
-    bundle->a = next_move;
+    return get_action(runner->c.y * level.xsize + runner->c.x, v, level);
   } else {
-    bundle->a = move_to_combat;
+    return move_to_combat;
   }
-
-  bundle->length = 0;	
-  return bundle;
 }
 
 void print_action(action a)
