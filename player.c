@@ -36,9 +36,15 @@ typedef struct path{ // Structure qui contient les informations que renvoie A*
   bool found;
 } path;
 
+typedef struct child{ // Structure utilisee pour remonter le chemin trouve par A*
+  int pos;
+  float distance;
+} child;
+
 // Local prototypes (add your own prototypes below)
 // Tas-min, afin de pouvoir faire de la recherche de chemin intelligente, https://fr.wikipedia.org/wiki/Tas_binaire
 min_heap* create_min_heap(int);
+void free_min_heap(min_heap*);
 void swap(int*, int*); // Echange les valeurs des deux entiers
 void swapf(float*, float*); // Echange les valeurs de deux flottants
 void percolate_up(min_heap*, int); // Conserve notre invariance, le min de priorite est dans la racine de l'arbre, utilisee dans un cas d'insertion
@@ -47,7 +53,6 @@ void insert(min_heap*, int, float);
 void modify_priority(min_heap*, int, float); // key est la valeur dans array de l'element a modifier
 int extract_min(min_heap*); // Renvoie l'element de priorite minimale est le retire de la file
 bool is_member(min_heap*, int);
-void free_min_heap(min_heap*);
 
 // Outils
 float dist(int, int, int, int); // Calcule la distance euclidienne entre deux points (avec leurs coordonnees)
@@ -59,6 +64,8 @@ bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie
 character_list get_closest_enemy(character_list, character_list); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
 
 // A*
+path* create_path(int, levelinfo);
+void free_path(path*);
 bool is_valid(int, action, levelinfo); // Verifie si une action est valide
 int weight(action); // Valeur d'une action, utilise pour le calcul de la priorite
 int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effectue une action
@@ -74,6 +81,35 @@ min_heap* create_min_heap(int capacity){
   heap->priority = malloc(capacity * sizeof(int));
 
   return heap;
+}
+
+void free_min_heap(min_heap* heap){
+  free(heap->array);
+  free(heap->priority);
+  free(heap);
+}
+
+path* create_path(int heap_capacity, levelinfo level){
+  path* pat = malloc(sizeof(path));
+
+  pat->heap = create_min_heap(heap_capacity);
+  pat->d = malloc(level.xsize * level.ysize * sizeof(int));
+  pat->p = malloc(level.xsize * level.ysize * sizeof(int));
+  pat->found = false;
+
+  for(int i = 0; i < level.xsize * level.ysize; i++){
+    pat->d[i] = 1000000;
+    pat->p[i] = -1;
+  }
+
+  return pat;
+}
+
+void free_path(path* pat){
+  free(pat->d);
+  free(pat->p);
+  free_min_heap(pat->heap);
+  free(pat);
 }
 
 void swap(int* a, int* b){
@@ -97,16 +133,16 @@ void percolate_up(min_heap* heap, int i){
 }
 
 void percolate_down(min_heap* heap, int i){
-  // Recursivement, on descend i jusqu'a ce que sa priorite soit inferieure a celle de ses fils
+  // On descend i jusqu'a ce que sa priorite soit inferieure a celle de ses fils
   int current = i;
   int left = 2 * i + 1;
   int right = 2 * i + 2;
 
-  if(heap->priority[left] < heap->priority[current] && left < heap->size){
+  if(left < heap->size && heap->priority[left] < heap->priority[current]){
     current = left;
   }
 
-  if(heap->priority[right] < heap->priority[current] && right < heap->size){
+  if(right < heap->size && heap->priority[right] < heap->priority[current]){
     current = right;
   }
 
@@ -171,12 +207,6 @@ bool is_member(min_heap* heap, int key){
   }
 
   return false;
-}
-
-void free_min_heap(min_heap* heap){
-  free(heap->array);
-  free(heap->priority);
-  free(heap);
 }
 
 float dist(int x1, int y1, int x2, int y2){
@@ -315,10 +345,13 @@ bool is_in_bonus_list(bonus_list bonus_e, bonus_list bonusl){
   bonus_list current = bonusl;
 
   while(current != NULL){
+    printf("Tried\n");
     if(current->b.x == bonus_e->b.x && current->b.y == bonus_e->b.y){ // Iteration dans une liste chainee
       return true;
     }
+    printf("Not\n");
     current = current->next;
+    printf("Not2\n");
   }
 
   return false;
@@ -412,21 +445,13 @@ character_list get_closest_enemy(character_list characterl, character_list runne
 }
 
 path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
-  path* pat = malloc(sizeof(path));
+  path* pat = create_path(100, level);
 
-  pat->heap = create_min_heap(100);
-  pat->d = malloc(level.xsize * level.ysize * sizeof(int));
-  pat->p = malloc(level.xsize * level.ysize * sizeof(int));
-  pat->found = false;
-
-  for(int i = 0; i < level.xsize * level.ysize; i++){
-    pat->d[i] = 1000000;
-    pat->p[i] = -1;
-  }
+  // On ajoute le runner a la file
   pat->d[runner->c.y * level.xsize + runner->c.x] = runner->c.y * level.xsize + runner->c.x;
   insert(pat->heap, runner->c.y * level.xsize + runner->c.x, 0);
 
-  int count = 0;
+  int count = 0; // Evite les boucles infinies
   
   while(!(pat->heap->size == 0) && count < 1000){
     int u = extract_min(pat->heap);
@@ -458,11 +483,6 @@ path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
   }
   return pat;
 }
-
-typedef struct child{
-  int pos;
-  float distance;
-} child;
 
 child find_closest_child(int* p, int origin, int destination, levelinfo level){
   float min_dist = 10000;
@@ -509,8 +529,6 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
   int move_to_combat = -1;
 
   while(closest_bonus != NULL){
-    // printf("Closest bonus: %d %d\n", closest_bonus->b.x, closest_bonus->b.y);
-
     if(level.map[closest_bonus->b.y][closest_bonus->b.x] == WALL){
       bonus_list tmp = malloc(sizeof(bonus_list));
       tmp->b = closest_bonus->b;
@@ -525,16 +543,15 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
     path* pat = a_star(runner, closest_bonus, level);
 
     if(pat->found){
-      // printf("Found from A*\n");
       v = closest_bonus->b.y * level.xsize + closest_bonus->b.x;
       while(pat->p[v] != runner->c.y * level.xsize + runner->c.x){
         v = pat->p[v];
       }
+      free_path(pat);
       break;
     } else if(pat->heap->size == 0){
       character_list closest_enemy = get_closest_enemy(characterl, runner);
       if(closest_enemy == NULL){
-        // printf("Closest choice\n");
         if(move_to_closest == -1){
           int runner_pos = runner->c.y * level.xsize + runner->c.x;
           int closest_bonus_pos = closest_bonus->b.y * level.xsize + closest_bonus->b.x;
@@ -545,7 +562,6 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
         }
         v = move_to_closest;
       } else {
-        // printf("Combat choice\n");
         if(move_to_combat == -1){
           int distance = runner->c.x - closest_enemy->c.x;
           if(distance > 0 && distance < 4){ // a gauche
@@ -565,11 +581,11 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
         }
       }
     } else {
-      // printf("Found from A* with path too long\n");
       v = extract_min(pat->heap);
       while(pat->p[v] != runner->c.y * level.xsize + runner->c.x){
         v = pat->p[v];
       }
+      free_path(pat);
       break;
     }
     bonus_list tmp = malloc(sizeof(bonus_list));
@@ -581,6 +597,8 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
     } else {
       closest_bonus = NULL;
     }
+
+    free_path(pat);
   }
 
   if(v != -1){
