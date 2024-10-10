@@ -71,6 +71,7 @@ int weight(action); // Valeur d'une action, utilise pour le calcul de la priorit
 int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effectue une action
 action get_action(int, int, levelinfo); // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
 path* a_star(character_list, bonus_list, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
+child find_closest_child(int*, int, int, levelinfo); // Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus
 
 
 min_heap* create_min_heap(int capacity){
@@ -484,10 +485,11 @@ path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
 }
 
 child find_closest_child(int* p, int origin, int destination, levelinfo level){
+  // On cherche le chemin qui nous rapproche le plus du bonus
   float min_dist = 10000;
   int min_child = -1;
 
-  for(int i = 0; i < level.xsize*level.ysize; i++){
+  for(int i = 0; i < level.xsize * level.ysize; i++){ // On cherche tous les noeuds qui ont pour parent origin
     if(p[i] == origin){
       child v = find_closest_child(p, i, destination, level);
       int distance = v.distance + vdist(i, origin, level);
@@ -497,7 +499,7 @@ child find_closest_child(int* p, int origin, int destination, levelinfo level){
       }
     }
   }
-  if (min_child == -1){
+  if (min_child == -1){ // Si on n'a pas trouve de noeud enfant, c'est qu'on est proche de la destination
     child c = {origin, vdist(origin, destination, level)};
     return c;
   } else {
