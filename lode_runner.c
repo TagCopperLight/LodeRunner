@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
   bool runner_round_only=false;
 
   unsigned int seed = (unsigned int)time(NULL);
-  // seed = 1728551529;
+  seed = 1728554747;
 
   printf("Seed: %u\n", seed);
 

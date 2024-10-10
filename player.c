@@ -369,6 +369,7 @@ levelinfo add_enemies(levelinfo level, character_list characterl, bomb_list bomb
   while(current != NULL){
     if(current->c.item == ENEMY){
       level.map[current->c.y][current->c.x] = WALL;
+
       // On ajoute des murs autour des ennemis s'ils sont sur une echelle ou un cable pour faciliter la tache du A*
       if(level.map[current->c.y + 1][current->c.x] == LADDER){
         level.map[current->c.y + 1][current->c.x] = WALL;
@@ -512,35 +513,42 @@ child find_closest_child(int* p, int origin, int destination, levelinfo level){
 }
 
 void special_moves(character_list runner, character_list closest_enemy, bonus_list closest_bonus, path* pat, int* move_to_closest, int* move_to_combat, levelinfo level){
+  printf("Special moves\n");
+  char down_left = level.map[runner->c.y + 1][runner->c.x - 1];
+  char down_right = level.map[runner->c.y + 1][runner->c.x + 1];
+  char left = level.map[runner->c.y][runner->c.x - 1];
+  char right = level.map[runner->c.y][runner->c.x + 1];
+  char center = level.map[runner->c.y][runner->c.x];
+
   if(closest_enemy != NULL){
     if(*move_to_combat == -1){
       int distance = runner->c.x - closest_enemy->c.x;
       if(level.map[runner->c.y - 1][runner->c.x] == CABLE){
         *move_to_combat = DOWN;
       } else {
-        if(distance > 0 && distance < 4){ // a gauche
+        if(distance > 0 && distance < 4 && down_left != PATH && left != LADDER && down_left != LADDER){ // a gauche
           *move_to_combat = BOMB_LEFT;
-        } else if(distance < 0 && distance > -4){ // a droite
+        } else if(distance < 0 && distance > -4 && down_right != PATH && right != LADDER && down_right != LADDER){ // a droite
           *move_to_combat = BOMB_RIGHT;
         }
       }
       bool can_right = is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level);
       bool can_left = is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level);
 
-      if(can_right){
-        if((level.map[runner->c.y][runner->c.x - 1] == LADDER || level.map[runner->c.y][runner->c.x - 1] == WALL) && distance > 0){
+      if(can_right && down_right != BOMB){
+        if((left == LADDER || left == WALL || center == LADDER) && distance > 0){
           *move_to_combat = RIGHT;
         }
       }
-      if(can_left){
-        if((level.map[runner->c.y][runner->c.x + 1] == LADDER || level.map[runner->c.y][runner->c.x + 1] == WALL) && distance < 0){
+      if(can_left && down_left != BOMB){
+        if((right == LADDER || right == WALL || center == LADDER) && distance < 0){
           *move_to_combat = LEFT;
         }
       }
       if(*move_to_combat == -1){
-        if(distance > 0 && can_left){
+        if(distance > 0 && can_left && down_left != BOMB){
           *move_to_combat = LEFT;
-        } else if(distance < 0 && can_right){
+        } else if(distance < 0 && can_right && down_right != BOMB){
           *move_to_combat = RIGHT;
         }
       }
@@ -554,6 +562,34 @@ void special_moves(character_list runner, character_list closest_enemy, bonus_li
 
       *move_to_closest = get_action(runner_pos, c.pos, level);
     }
+  }
+}
+
+void print_map(levelinfo level, path* pat, int v, int u){
+  for(int i = 0; i < level.ysize; i++){
+    for(int j = 0; j < level.xsize; j++){
+      bool is_runner = u == i * level.xsize + j;
+      bool is_bonus = v == i * level.xsize + j;
+      bool in_path = false;
+      int v2 = v;
+      while(pat->p[v2] != u){
+        if(v2 == i * level.xsize + j){
+          in_path = true;
+          break;
+        }
+        v2 = pat->p[v2];
+      }
+      if(is_runner){
+        printf("R");
+      } else if(is_bonus){
+        printf("B");
+      } else if(in_path){
+        printf("*");
+      } else {
+        printf("%c", level.map[i][j]);
+      }
+    }
+    printf("\n");
   }
 }
 
@@ -592,11 +628,16 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
 
     if(pat->found){
       printf("A* found\n");
+      print_map(level, pat, closest_bonus->b.y * level.xsize + closest_bonus->b.x, runner->c.y * level.xsize + runner->c.x);
       v = closest_bonus->b.y * level.xsize + closest_bonus->b.x;
       while(pat->p[v] != runner->c.y * level.xsize + runner->c.x){
         v = pat->p[v];
       }
       free_path(pat);
+
+      move_to_combat = -1;
+      move_to_closest = -1;
+
       break;
     } else if(pat->heap->size != 0){
       printf("ERROR: Path is longer than heap size\n");
