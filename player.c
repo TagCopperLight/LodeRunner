@@ -233,6 +233,10 @@ bool is_valid(int pos, action a, levelinfo level){
   // On verifie si le joueur n'est pas en l'air
   bool not_in_air = (map[y + 1][x] != PATH && map[y + 1][x] != CABLE) || map[y - 1][x] == CABLE;
 
+  if(map[y + 1][x] == WALL){ // Evite de sauter sur la tete des ennemis
+    return false;
+  }
+
   switch(a){
     case NONE:
       return true;
@@ -515,6 +519,26 @@ void special_moves(character_list runner, character_list closest_enemy, bonus_li
         *move_to_combat = BOMB_LEFT;
       } else if(distance < 0 && distance > -4){ // a droite
         *move_to_combat = BOMB_RIGHT;
+      }
+      bool can_right = is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level);
+      bool can_left = is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level);
+
+      if(can_right){
+        if((level.map[runner->c.y][runner->c.x - 1] == LADDER || level.map[runner->c.y][runner->c.x - 1] == WALL) && distance > 0){
+          *move_to_combat = RIGHT;
+        }
+      }
+      if(can_left){
+        if((level.map[runner->c.y][runner->c.x + 1] == LADDER || level.map[runner->c.y][runner->c.x + 1] == WALL) && distance < 0){
+          *move_to_combat = LEFT;
+        }
+      }
+      if(*move_to_combat == -1){
+        if(distance > 0){
+          *move_to_combat = LEFT;
+        } else {
+          *move_to_combat = RIGHT;
+        }
       }
     }
   } else {
