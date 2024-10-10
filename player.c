@@ -256,13 +256,13 @@ bool is_valid(int pos, action a, levelinfo level){
       // On ne peut aller a gauche que si il n'y a pas de mur a gauche et que le joueur n'est pas en l'air
       // C'est un petit hack car le moteur avance de plusieurs tour de jeu sans utiliser le code du joueur tant qu'il tombe, mais le A* ne le sait pas,
       // alors on se debrouille pour que la seule action possible soit DOWN
-      if(map[y][x - 1] != WALL && map[y][x - 1] != FLOOR && not_in_air){
+      if(map[y][x - 1] != WALL && map[y][x - 1] != FLOOR && map[y][x - 1] != BOMB && not_in_air){
         return true;
       }
       break;
     case RIGHT:
       // De meme pour la droite
-      if(map[y][x + 1] != WALL && map[y][x + 1] != FLOOR && not_in_air){
+      if(map[y][x + 1] != WALL && map[y][x + 1] != FLOOR && map[y][x + 1] != BOMB && not_in_air){
         return true;
       }
       break;
