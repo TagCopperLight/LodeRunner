@@ -515,10 +515,14 @@ void special_moves(character_list runner, character_list closest_enemy, bonus_li
   if(closest_enemy != NULL){
     if(*move_to_combat == -1){
       int distance = runner->c.x - closest_enemy->c.x;
-      if(distance > 0 && distance < 4){ // a gauche
-        *move_to_combat = BOMB_LEFT;
-      } else if(distance < 0 && distance > -4){ // a droite
-        *move_to_combat = BOMB_RIGHT;
+      if(level.map[runner->c.y - 1][runner->c.x] == CABLE){
+        *move_to_combat = DOWN;
+      } else {
+        if(distance > 0 && distance < 4){ // a gauche
+          *move_to_combat = BOMB_LEFT;
+        } else if(distance < 0 && distance > -4){ // a droite
+          *move_to_combat = BOMB_RIGHT;
+        }
       }
       bool can_right = is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level);
       bool can_left = is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level);
@@ -534,9 +538,9 @@ void special_moves(character_list runner, character_list closest_enemy, bonus_li
         }
       }
       if(*move_to_combat == -1){
-        if(distance > 0){
+        if(distance > 0 && can_left){
           *move_to_combat = LEFT;
-        } else {
+        } else if(distance < 0 && can_right){
           *move_to_combat = RIGHT;
         }
       }
@@ -587,6 +591,7 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
     path* pat = a_star(runner, closest_bonus, level);
 
     if(pat->found){
+      printf("A* found\n");
       v = closest_bonus->b.y * level.xsize + closest_bonus->b.x;
       while(pat->p[v] != runner->c.y * level.xsize + runner->c.x){
         v = pat->p[v];
