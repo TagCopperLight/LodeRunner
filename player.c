@@ -424,21 +424,20 @@ character_list get_closest_enemy(character_list characterl, character_list runne
   }
 
   float best_dist = 100000;
-  character_list curr = characterl;
+  character_list current = characterl;
 
-  while(curr != NULL){
-    if(curr->c.item == ENEMY){
-      if (curr->c.y != runner->c.y){ // On ne prend en compte que les ennemis sur la meme ligne que le runner, ceux en hauteur ne sont pas dangereux
-        curr = curr->next;
+  while(current != NULL){
+    if(current->c.item == ENEMY){
+      if (current->c.y != runner->c.y){ // On ne prend en compte que les ennemis sur la meme ligne que le runner, ceux en hauteur ne sont pas dangereux
+        current = current->next;
         continue;
       }
-      float curr_dist = dist(curr->c.x, curr->c.y, runner->c.x, runner->c.y);
-      if(curr_dist < best_dist){
-        closest_enemy = curr;
-        best_dist = curr_dist;
+      if(dist(current->c.x, current->c.y, runner->c.x, runner->c.y) < best_dist){
+        closest_enemy = current;
+        best_dist = dist(current->c.x, current->c.y, runner->c.x, runner->c.y);
       }
     }
-    curr = curr->next;
+    current = current->next;
   }
 
   return closest_enemy;
@@ -454,27 +453,27 @@ path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
   int count = 0; // Evite les boucles infinies
   
   while(!(pat->heap->size == 0) && count < 1000){
-    int u = extract_min(pat->heap);
+    int u = extract_min(pat->heap); // Sommet courant, celui avec la priorite minimale
 
-    if(u == closest_bonus->b.y * level.xsize + closest_bonus->b.x){
+    if(u == closest_bonus->b.y * level.xsize + closest_bonus->b.x){ // On a trouve le bonus, on pourra remonter le chemin grace a pat->p
       pat->found = true;
       break;
     }
 
-    for(int i=1; i<5; i++){
-      if(!is_valid(u, i, level)){
+    for(int i=1; i<5; i++){ // i represente une action, 1 = UP, 2 = DOWN, 3 = LEFT, 4 = RIGHT
+      if(!is_valid(u, i, level)){ // On verifie que l'action est possible
         continue;
       }
-      int v = get_new_pos(u, i, level);
-      float h_v = vdist(v, closest_bonus->b.y * level.xsize + closest_bonus->b.x, level);
+      int v = get_new_pos(u, i, level); // On calcule la position apres l'action
+      float h_v = vdist(v, closest_bonus->b.y * level.xsize + closest_bonus->b.x, level); // Heuristique, distance euclidienne entre v et le bonus
 
-      if(pat->d[u] + weight(i) < pat->d[v]){
+      if(pat->d[u] + weight(i) < pat->d[v]){ // Si on a trouve un chemin plus court
         pat->d[v] = pat->d[u] + weight(i);
         pat->p[v] = u;
 
-        if(is_member(pat->heap, v) == false){
+        if(is_member(pat->heap, v) == false){ // Si v n'est pas dans la file, on l'ajoute
           insert(pat->heap, v, pat->d[v] + h_v);
-        } else {
+        } else { // Sinon on modifie sa priorite
           modify_priority(pat->heap, v, pat->d[v] + h_v);
         }
       }
