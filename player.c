@@ -233,9 +233,9 @@ bool is_valid(int pos, action a, levelinfo level){
   // On verifie si le joueur n'est pas en l'air
   bool not_in_air = (map[y + 1][x] != PATH && map[y + 1][x] != CABLE) || map[y - 1][x] == CABLE;
 
-  if(map[y + 1][x] == WALL){ // Evite de sauter sur la tete des ennemis
-    return false;
-  }
+  // if(map[y + 1][x] == WALL){ // Evite de sauter sur la tete des ennemis
+  //   return false;
+  // }
 
   switch(a){
     case NONE:
@@ -369,23 +369,6 @@ levelinfo add_enemies(levelinfo level, character_list characterl, bomb_list bomb
   while(current != NULL){
     if(current->c.item == ENEMY){
       level.map[current->c.y][current->c.x] = WALL;
-
-      // On ajoute des murs autour des ennemis s'ils sont sur une echelle ou un cable pour faciliter la tache du A*
-      if(level.map[current->c.y + 1][current->c.x] == LADDER){
-        level.map[current->c.y + 1][current->c.x] = WALL;
-      }
-      if(level.map[current->c.y - 1][current->c.x] == LADDER){
-        level.map[current->c.y - 1][current->c.x] = WALL;
-      }
-      if(level.map[current->c.y - 1][current->c.x] == CABLE){
-        level.map[current->c.y - 1][current->c.x] = WALL;
-      }
-      if(level.map[current->c.y - 1][current->c.x + 1] == CABLE){
-        level.map[current->c.y - 1][current->c.x + 1] = WALL;
-      }
-      if (level.map[current->c.y - 1][current->c.x - 1] == CABLE){
-        level.map[current->c.y - 1][current->c.x - 1] = WALL;
-      }
     }
     current = current->next;
   }
@@ -398,6 +381,55 @@ levelinfo add_enemies(levelinfo level, character_list characterl, bomb_list bomb
   }
 
   return level;
+}
+
+levelinfo get_astar_level(levelinfo level, character_list characterl){
+  // On cree une copie du niveau pour ne pas modifier l'original
+  levelinfo astar_level;
+  astar_level.xsize = level.xsize;
+  astar_level.ysize = level.ysize;
+  astar_level.xexit = level.xexit;
+  astar_level.yexit = level.yexit;
+  astar_level.map = malloc(astar_level.ysize * sizeof(char*));
+
+  for(int i = 0; i < astar_level.ysize; i++){
+    astar_level.map[i] = malloc(astar_level.xsize * sizeof(char));
+    for(int j = 0; j < astar_level.xsize; j++){
+      astar_level.map[i][j] = level.map[i][j];
+    }
+  }
+
+  character_list current = characterl;
+
+  while(current != NULL){
+    if(current->c.item == ENEMY){
+      // On ajoute des murs autour des ennemis pour faciliter la tache du A*
+      if(astar_level.map[current->c.y][current->c.x - 1] != FLOOR){
+        astar_level.map[current->c.y][current->c.x - 1] = WALL;
+      }
+      if(astar_level.map[current->c.y][current->c.x + 1] != FLOOR){
+        astar_level.map[current->c.y][current->c.x + 1] = WALL;
+      }
+      if(astar_level.map[current->c.y + 1][current->c.x] == LADDER){
+        astar_level.map[current->c.y + 1][current->c.x] = WALL;
+      }
+      if(astar_level.map[current->c.y - 1][current->c.x] == LADDER){
+        astar_level.map[current->c.y - 1][current->c.x] = WALL;
+      }
+      if(astar_level.map[current->c.y - 1][current->c.x] == CABLE){
+        astar_level.map[current->c.y - 1][current->c.x] = WALL;
+      }
+      if(astar_level.map[current->c.y - 1][current->c.x + 1] == CABLE){
+        astar_level.map[current->c.y - 1][current->c.x + 1] = WALL;
+      }
+      if (astar_level.map[current->c.y - 1][current->c.x - 1] == CABLE){
+        astar_level.map[current->c.y - 1][current->c.x - 1] = WALL;
+      }
+    }
+    current = current->next;
+  }
+
+  return astar_level;
 }
 
 bonus_list get_closest_bonus(bonus_list bonusl, character_list runner, bonus_list already_seen){
@@ -513,7 +545,7 @@ child find_closest_child(int* p, int origin, int destination, levelinfo level){
 }
 
 void special_moves(character_list runner, character_list closest_enemy, bonus_list closest_bonus, path* pat, int* move_to_closest, int* move_to_combat, levelinfo level){
-  printf("Special moves\n");
+  // printf("Special moves\n");
   char down_left = level.map[runner->c.y + 1][runner->c.x - 1];
   char down_right = level.map[runner->c.y + 1][runner->c.x + 1];
   char left = level.map[runner->c.y][runner->c.x - 1];
@@ -570,21 +602,26 @@ void print_map(levelinfo level, path* pat, int v, int u){
     for(int j = 0; j < level.xsize; j++){
       bool is_runner = u == i * level.xsize + j;
       bool is_bonus = v == i * level.xsize + j;
-      bool in_path = false;
-      int v2 = v;
-      while(pat->p[v2] != u){
-        if(v2 == i * level.xsize + j){
-          in_path = true;
-          break;
-        }
-        v2 = pat->p[v2];
-      }
       if(is_runner){
         printf("R");
       } else if(is_bonus){
         printf("B");
-      } else if(in_path){
-        printf("*");
+      } else if(pat->found){
+        bool in_path = false;
+        int v2 = v;
+        while(pat->p[v2] != u){
+          if(v2 == i * level.xsize + j){
+            in_path = true;
+            break;
+          }
+          v2 = pat->p[v2];
+        }
+        
+        if(in_path){
+          printf("*");
+        } else {
+          printf("%c", level.map[i][j]);
+        }
       } else {
         printf("%c", level.map[i][j]);
       }
@@ -596,7 +633,13 @@ void print_map(levelinfo level, path* pat, int v, int u){
 action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl, bomb_list bombl){
   character_list runner = get_runner(characterl);
   level = add_enemies(level, characterl, bombl);
-  
+
+  levelinfo astar_level = get_astar_level(level, characterl);
+  path pat2 = {NULL, NULL, NULL, false};
+  path* pat3 = &pat2;
+  // printf("A* level : \n");
+  // print_map(astar_level, pat3, 0, runner->c.y * level.xsize + runner->c.x);
+
   bonus_list already_seen = NULL;
   bonus_list closest_bonus = get_closest_bonus(bonusl, runner, already_seen);
 
@@ -624,11 +667,12 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
       continue;
     }
 
-    path* pat = a_star(runner, closest_bonus, level);
+    path* pat = a_star(runner, closest_bonus, astar_level);
 
     if(pat->found){
-      printf("A* found\n");
-      print_map(level, pat, closest_bonus->b.y * level.xsize + closest_bonus->b.x, runner->c.y * level.xsize + runner->c.x);
+      // printf("Level : \n");
+      // print_map(level, pat, closest_bonus->b.y * level.xsize + closest_bonus->b.x, runner->c.y * level.xsize + runner->c.x);
+      // printf("A* found\n");
       v = closest_bonus->b.y * level.xsize + closest_bonus->b.x;
       while(pat->p[v] != runner->c.y * level.xsize + runner->c.x){
         v = pat->p[v];
@@ -660,13 +704,13 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
   }
 
   if(move_to_combat != -1){
-    printf("Combat\n");
+    // printf("Combat\n");
     return move_to_combat;
   } else if(move_to_closest != -1){
-    printf("Closest\n");
+    // printf("Closest\n");
     return move_to_closest;
   } else {
-    printf("A*\n");
+    // printf("A*\n");
     return get_action(runner->c.y * level.xsize + runner->c.x, v, level);
   }
 }
