@@ -131,7 +131,7 @@ void read_parameters(int, char *[], bool *);
 void print_parameters();
 void game_credits_printer();
 void game_over_printer(unsigned int);
-void congratulations_printer();
+void congratulations_printer(unsigned int);
 void map_reader(bool *);
 void map_printer(char **);
 void game_init(bool *);
@@ -209,9 +209,9 @@ int main(int argc, char *argv[])
   bool runner_round_only=false;
 
   unsigned int seed = (unsigned int)time(NULL);
-  seed = 1728659117;
+  seed = 1729085343;
 
-  printf("Seed: %u\n", seed);
+  // printf("Seed: %u\n", seed);
 
   srand(seed);
 
@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
     if (dead)
       game_over_printer(seed);
     else
-      congratulations_printer();
+      congratulations_printer(seed);
   }
   return 0;
 }
@@ -874,10 +874,10 @@ void game_over_printer(unsigned int seed)
   printf(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
-  printf("Seed: %u\n", seed);
+  printf("Over, Seed: %u\n", seed);
 }
 
-void congratulations_printer()
+void congratulations_printer(unsigned int seed)
 {
   if (settings.COLOR)
     printf(ANSI_COLOR_GREEN);
@@ -891,6 +891,7 @@ void congratulations_printer()
   printf("                   |___/                                                     \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
+  printf("Congrats, Seed: %u\n", seed);
 }
 
 void action_printer(action a)
