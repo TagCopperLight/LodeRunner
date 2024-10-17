@@ -93,6 +93,7 @@ typedef struct
   bool UNICODE; // game in unicode if true and in ascii otherwise
   int DELAY; // delay between rounds; default speed 100ms
   char *FILENAME; // map file
+  unsigned int SEED; // seed for random number generator
 } gamesettings;
 
 // global variables
@@ -208,14 +209,13 @@ int main(int argc, char *argv[])
   levelinfo map_info;
   bool runner_round_only=false;
 
-  unsigned int seed = (unsigned int)time(NULL);
-  seed = 1729085343;
 
-  // printf("Seed: %u\n", seed);
-
-  srand(seed);
-
+  settings.SEED = (unsigned int)time(NULL);
   read_parameters(argc, argv, &validparameters);
+  settings.SEED = 1729156528;
+
+  srand(settings.SEED);
+
   if (validparameters)
   {
     map_reader(&maploaded);
@@ -298,9 +298,9 @@ int main(int argc, char *argv[])
     } while (!dead && !exited);
 
     if (dead)
-      game_over_printer(seed);
+      game_over_printer(settings.SEED);
     else
-      congratulations_printer(seed);
+      congratulations_printer(settings.SEED);
   }
   return 0;
 }
@@ -324,6 +324,7 @@ void read_parameters(int argc, char *argv[], bool *pvalidparameters)
   char errormessage[] = "Usage: lode_runner [-debug on/off] [-display color/bw] [-encoding ascii/unicode] [-delay integer] level_file \n\a";
   int i = 1;
   int delay;
+  unsigned int seed;
   if (argc == 1)
     *pvalidparameters = false;
   else
@@ -383,7 +384,17 @@ void read_parameters(int argc, char *argv[], bool *pvalidparameters)
           *pvalidparameters = false;
         i = i + 2;
       }
-      else
+      else if (strncmp(argv[i], "-seed", 5) == 0 && argc > i + 1)
+      {
+        if (sscanf(argv[i + 1], "%u", &seed) == 1)
+        {
+          settings.SEED = seed;
+        }
+        else
+          *pvalidparameters = false;
+        i = i + 2;
+      }
+      else 
         *pvalidparameters = false;
     }
     if (settings.DEBUG)

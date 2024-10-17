@@ -23,6 +23,12 @@ extern bool DEBUG; // true if and only if the game runs in debug mode
 
 const char *students = "BOURDET"; // replace Random with the student names here
 
+void debug(char* s){
+  if(DEBUG){
+    printf("%s", s);
+  }
+}
+
 typedef struct min_heap{
   int size; // Nombre d'elements dans le tas
   int capacity; // Taille max du tas
@@ -62,16 +68,16 @@ character_list get_runner(character_list); // Renvoie le runner parmi les charac
 bool is_in_bonus_list(bonus_list, bonus_list); // Verifie si un bonus est dans une liste de bonus, on utilise ses coordonnees
 levelinfo add_enemies(levelinfo, character_list, bomb_list); // Ajoute les ennemis et les bombes a la map
 bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie le bonus le plus proche du runner, en evitant ceux deja vus
-character_list get_closest_enemy(character_list, character_list); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
+character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
 
 // A*
 path* create_path(int, levelinfo);
 void free_path(path*);
-bool is_valid(int, action, levelinfo); // Verifie si une action est valide
+bool is_valid(int, action, levelinfo, levelinfo); // Verifie si une action est valide
 int weight(action); // Valeur d'une action, utilise pour le calcul de la priorite
 int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effectue une action
 action get_action(int, int, levelinfo); // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
-path* a_star(character_list, bonus_list, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
+path* a_star(character_list, bonus_list, levelinfo, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
 child find_closest_child(int*, int, int, levelinfo); // Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus
 
 action lode_runner(levelinfo, character_list, bonus_list, bomb_list);
@@ -226,13 +232,14 @@ float vdist(int pos1, int pos2, levelinfo level){
   return dist(x1, y1, x2, y2);
 }
 
-bool is_valid(int pos, action a, levelinfo level){
+bool is_valid(int pos, action a, levelinfo level, levelinfo air_level){
   int x = pos % level.xsize;
   int y = pos / level.xsize;
   char** map = level.map;
+  char** air_map = air_level.map;
 
   // On verifie si le joueur n'est pas en l'air
-  bool not_in_air = (map[y + 1][x] != PATH && map[y + 1][x] != CABLE && map[y + 1][x] != BOMB) || map[y - 1][x] == CABLE;
+  bool not_in_air = (air_map[y + 1][x] != PATH && air_map[y + 1][x] != CABLE && air_map[y + 1][x] != BOMB) || air_map[y - 1][x] == CABLE;
 
   switch(a){
     case NONE:
@@ -245,7 +252,7 @@ bool is_valid(int pos, action a, levelinfo level){
       break;
     case DOWN:
       // On ne peut descendre que si il y a une echelle, un chemin ou un cable en dessous
-      if (map[y + 1][x] == LADDER || map[y + 1][x] == PATH || map[y + 1][x] == CABLE){
+      if ((map[y + 1][x] == LADDER || map[y + 1][x] == PATH || map[y + 1][x] == CABLE) && map[y + 1][x] != ENEMY){
         return true;
       }
       break;
@@ -253,13 +260,13 @@ bool is_valid(int pos, action a, levelinfo level){
       // On ne peut aller a gauche que si il n'y a pas de mur a gauche et que le joueur n'est pas en l'air
       // C'est un petit hack car le moteur avance de plusieurs tour de jeu sans utiliser le code du joueur tant qu'il tombe, mais le A* ne le sait pas,
       // alors on se debrouille pour que la seule action possible soit DOWN
-      if(map[y][x - 1] != WALL && map[y][x - 1] != FLOOR && map[y][x - 1] != ENEMY && not_in_air){
+      if(map[y][x - 1] != WALL && map[y][x - 1] != FLOOR && map[y][x - 1] != ENEMY && map[y + 1][x - 1] != ENEMY && not_in_air){
         return true;
       }
       break;
     case RIGHT:
       // De meme pour la droite
-      if(map[y][x + 1] != WALL && map[y][x + 1] != FLOOR && map[y][x + 1] != ENEMY && not_in_air){
+      if(map[y][x + 1] != WALL && map[y][x + 1] != FLOOR && map[y][x + 1] != ENEMY && map[y + 1][x + 1] != ENEMY && not_in_air){
         return true;
       }
       break;
@@ -457,7 +464,7 @@ bonus_list get_closest_bonus(bonus_list bonusl, character_list runner, bonus_lis
   return closest_bonus;
 }
 
-character_list get_closest_enemy(character_list characterl, character_list runner){
+character_list get_closest_enemy(character_list characterl, character_list runner, levelinfo level){
   character_list closest_enemy = NULL;
 
   if(characterl == NULL) {
@@ -469,13 +476,38 @@ character_list get_closest_enemy(character_list characterl, character_list runne
 
   while(current != NULL){
     if(current->c.item == ENEMY){
-      if (current->c.y != runner->c.y){ // On ne prend en compte que les ennemis sur la meme ligne que le runner, ceux en hauteur ne sont pas dangereux
-        current = current->next;
-        continue;
+      bool enemy_above = false;
+      bool enemy_below = false;
+      if(current->c.x == runner->c.x){
+        int y = current->c.y;
+        if(current->c.y < runner->c.y){
+          enemy_above = true;
+          y++;
+          while(y < runner->c.y){
+            if(level.map[y][current->c.x] != LADDER){
+              enemy_above = false;
+              break;
+            }
+            y++;
+          }
+        } else {
+          enemy_below = true;
+          y--;
+          while(y > runner->c.y){
+            if(level.map[y][current->c.x] != LADDER){
+              enemy_below = false;
+              break;
+            }
+            y--;
+          }
+        }
       }
-      if(dist(current->c.x, current->c.y, runner->c.x, runner->c.y) < best_dist){
-        closest_enemy = current;
-        best_dist = dist(current->c.x, current->c.y, runner->c.x, runner->c.y);
+      if(current->c.y == runner->c.y || enemy_above || enemy_below){ // On ne prend en compte que les ennemis sur la meme ligne que le runner, ou ceux qui sont sur la même échelle
+        float distance = dist(current->c.x, current->c.y, runner->c.x, runner->c.y);
+        if(distance < best_dist && distance < 10){
+          closest_enemy = current;
+          best_dist = dist(current->c.x, current->c.y, runner->c.x, runner->c.y);
+        }
       }
     }
     current = current->next;
@@ -484,7 +516,7 @@ character_list get_closest_enemy(character_list characterl, character_list runne
   return closest_enemy;
 }
 
-path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
+path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level, levelinfo air_level){
   path* pat = create_path(100, level);
 
   // On ajoute le runner a la file
@@ -502,7 +534,7 @@ path* a_star(character_list runner, bonus_list closest_bonus, levelinfo level){
     }
 
     for(int i=1; i<5; i++){ // i represente une action, 1 = UP, 2 = DOWN, 3 = LEFT, 4 = RIGHT
-      if(!is_valid(u, i, level)){ // On verifie que l'action est possible
+      if(!is_valid(u, i, level, air_level)){ // On verifie que l'action est possible
         continue;
       }
       int v = get_new_pos(u, i, level); // On calcule la position apres l'action
@@ -551,40 +583,80 @@ child find_closest_child(int* p, int origin, int destination, levelinfo level){
 void special_moves(character_list runner, character_list closest_enemy, bonus_list closest_bonus, path* pat, int* move_to_closest, int* move_to_combat, levelinfo level){
   char down_left = level.map[runner->c.y + 1][runner->c.x - 1];
   char down_right = level.map[runner->c.y + 1][runner->c.x + 1];
+  char top_left = level.map[runner->c.y - 1][runner->c.x - 1];
+  char top_right = level.map[runner->c.y - 1][runner->c.x + 1];
   char left = level.map[runner->c.y][runner->c.x - 1];
   char right = level.map[runner->c.y][runner->c.x + 1];
   char center = level.map[runner->c.y][runner->c.x];
 
   if(closest_enemy != NULL){
     if(*move_to_combat == -1){
-      int distance = runner->c.x - closest_enemy->c.x;
-      if(level.map[runner->c.y - 1][runner->c.x] == CABLE){
-        *move_to_combat = DOWN;
-      } else {
-        if(distance > 0 && distance < 3 && down_left != PATH && left != LADDER && down_left != LADDER){ // a gauche
-          *move_to_combat = BOMB_LEFT;
-        } else if(distance < 0 && distance > -3 && down_right != PATH && right != LADDER && down_right != LADDER){ // a droite
-          *move_to_combat = BOMB_RIGHT;
-        }
+      debug("Entered move to combat\n");
+      int distance = runner->c.y - closest_enemy->c.y;
+      if(DEBUG){
+        printf("Vertical distance to closest enemy: %d\n", distance);
       }
-      bool can_right = is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level);
-      bool can_left = is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level);
+      if(distance == 0){ // Combat horizontal
+        debug("Horizontal combat\n");
+        distance = runner->c.x - closest_enemy->c.x;
+        if(DEBUG){
+          printf("Distance to closest enemy: %d\n", distance);
+        }
+        if(level.map[runner->c.y - 1][runner->c.x] == CABLE){
+          debug("Cable above, dropping\n");
+          *move_to_combat = DOWN;
+        } else if(distance > 0 && distance < 4){ // a gauche
+          if(down_left == FLOOR || down_left == BOMB){
+            debug("Enemy close on the left, bombing\n");
+            *move_to_combat = BOMB_LEFT;
+          } else {
+            debug("Can't bomb, moving right\n");
+            *move_to_combat = RIGHT;
+          }
+        } else if(distance < 0 && distance > -4){ // a droite
+          if(down_right == FLOOR || down_right == BOMB){
+            debug("Enemy close on the right, bombing\n");
+            *move_to_combat = BOMB_RIGHT;
+          } else {
+            debug("Can't bomb, moving left\n");
+            *move_to_combat = LEFT;
+          }
+        }
 
-      if(can_right && down_right != BOMB){
-        if((left == LADDER || left == WALL || center == LADDER) && distance > 0){
-          *move_to_combat = RIGHT;
+        bool can_right = is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level, level);
+        bool can_left = is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level, level);
+
+        if(DEBUG){
+          printf("Can right: %d\n", can_right);
+          printf("Can left: %d\n", can_left);
         }
-      }
-      if(can_left && down_left != BOMB){
-        if((right == LADDER || right == WALL || center == LADDER) && distance < 0){
-          *move_to_combat = LEFT;
+
+        if(can_right){
+          if((left == LADDER || center == LADDER || (left == ENEMY && top_left == LADDER)) && distance > 0){
+            debug("Moving right, cause of LADDER\n");
+            *move_to_combat = RIGHT;
+          }
         }
-      }
-      if(*move_to_combat == -1){
-        if(distance > 0 && can_left && down_left != BOMB){
-          *move_to_combat = LEFT;
-        } else if(distance < 0 && can_right && down_right != BOMB){
-          *move_to_combat = RIGHT;
+        if(can_left){
+          if((right == LADDER || center == LADDER || (right == ENEMY && top_right == LADDER)) && distance < 0){
+            debug("Moving left, cause of LADDER\n");
+            *move_to_combat = LEFT;
+          }
+        }
+      } else { // Vertical combat
+        debug("Vertical combat\n");
+        bool can_up = is_valid(runner->c.y * level.xsize + runner->c.x, UP, level, level);
+        bool can_down = is_valid(runner->c.y * level.xsize + runner->c.x, DOWN, level, level);
+        if(DEBUG){
+          printf("Can up: %d\n", can_up);
+          printf("Can down: %d\n", can_down);
+        }
+        if(distance > 0 && can_down){
+          debug("Moving down\n");
+          *move_to_combat = DOWN;
+        } else if(distance < 0 && can_up){
+          debug("Moving up\n");
+          *move_to_combat = UP;
         }
       }
     }
@@ -678,7 +750,7 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
       continue;
     }
 
-    path* pat = a_star(runner, closest_bonus, astar_level);
+    path* pat = a_star(runner, closest_bonus, astar_level, level);
 
     if(pat->found){
       if(DEBUG){
@@ -701,7 +773,7 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
       printf("ERROR: Path is longer than heap size\n");
       exit(1);
     } else {
-      special_moves(runner, get_closest_enemy(characterl, runner), closest_bonus, pat, &move_to_closest, &move_to_combat, level);
+      special_moves(runner, get_closest_enemy(characterl, runner, level), closest_bonus, pat, &move_to_closest, &move_to_combat, level);
     }
 
     bonus_list tmp = malloc(sizeof(bonus_list));
@@ -724,25 +796,15 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
     print_map(astar_level, pat3, 0, runner->c.y * level.xsize + runner->c.x);
   }
 
-  if(DEBUG){
-    if(move_to_combat != -1){
-      printf("Combat\n");
-      return move_to_combat;
-    } else if(move_to_closest != -1){
-      printf("Closest\n");
-      return move_to_closest;
-    } else {
-      printf("A*\n");
-      return get_action(runner->c.y * level.xsize + runner->c.x, v, level);
-    }
-  } else {
   if(move_to_combat != -1){
-      return move_to_combat;
-    } else if(move_to_closest != -1){
-      return move_to_closest;
-    } else {
-      return get_action(runner->c.y * level.xsize + runner->c.x, v, level);
-    }
+    debug("Combat\n");
+    return move_to_combat;
+  } else if(move_to_closest != -1){
+    debug("Closest\n");
+    return move_to_closest;
+  } else {
+    debug("A*\n");
+    return get_action(runner->c.y * level.xsize + runner->c.x, v, level);
   }
 }
 
