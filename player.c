@@ -71,6 +71,7 @@ levelinfo add_enemies(levelinfo, character_list, bomb_list); // Ajoute les ennem
 bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie le bonus le plus proche du runner, en evitant ceux deja vus
 character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
 bool is_valid_closest(int, action, levelinfo); // Verifie si une action est dangereuse, utilisée pour le mode closest
+void special_moves(character_list, character_list, int*, levelinfo); // Gere toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...)
 
 // A*
 path* create_path(int, levelinfo);
@@ -81,7 +82,6 @@ int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effe
 action get_action(int, int, levelinfo); // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
 path* a_star(character_list, bonus_list, levelinfo, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
 child* find_closest_child(int*, int, int, levelinfo); // Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus
-void free_child(child*); // Libere la memoire allouee a un enfant
 
 action lode_runner(levelinfo, character_list, bonus_list, bomb_list);
 
@@ -406,7 +406,7 @@ bool is_in_bonus_list(bonus_list bonus_e, bonus_list bonusl){
     }
     current = current->next;
   }
-
+    
   return false;
 }
 
@@ -637,13 +637,6 @@ child* find_closest_child(int* p, int origin, int destination, levelinfo level){
   }
 }
 
-void free_child(child* c){
-  if(c->parent != NULL){
-    free_child(c->parent);
-  }
-  free(c);
-}
-
 void special_moves(character_list runner, character_list closest_enemy, int* move_to_combat, levelinfo level){
   char down_left = level.map[runner->c.y + 1][runner->c.x - 1];
   char down_right = level.map[runner->c.y + 1][runner->c.x + 1];
@@ -845,8 +838,6 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
 
       move_to_skipped = get_action(runner_pos, c->pos, level);
 
-      // free_child(c);
-
       bonus_list tmp = malloc(sizeof(bonus_list));
       tmp->b = closest_bonus->b;
       tmp->next = already_seen;
@@ -910,8 +901,6 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
     bool closest = move_to_path == -1 && move_to_combat == -1 && move_to_closest != -1; 
     print_map(astar_level, pat3, -1, runner->c.y * level.xsize + runner->c.x, closest, child_closest);
   }
-
-  // free_child(child_closest);
 
   if(move_to_path != -1){
     debug("Path\n");

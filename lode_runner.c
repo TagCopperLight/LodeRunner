@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 
   settings.SEED = (unsigned int)time(NULL);
   read_parameters(argc, argv, &validparameters);
-  settings.SEED = 1732104714;
+  // settings.SEED = 1732104714;
   // 1732104640, 1732104643, 1732104714
 
   srand(settings.SEED);

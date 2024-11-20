@@ -4,12 +4,12 @@ congrats_count=0
 over_count=0
 over_seeds=""
 curr_seed=$(date +%s)
-total_games=100
+total_games=500
 
 for i in $(seq 1 $total_games);
 do
   # Execute the program and capture its output
-  output=$(./lode_runner -delay 0 -debug off -seed $curr_seed level6.map)
+  output=$(./lode_runner -delay 0 -debug off -seed $curr_seed level4.map)
   curr_seed=$(expr $curr_seed + 1)
 
   # Check if the output contains "Congrats" or "Over"
