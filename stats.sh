@@ -9,7 +9,7 @@ total_games=500
 for i in $(seq 1 $total_games);
 do
   # Execute the program and capture its output
-  output=$(./lode_runner -delay 0 -debug off -seed $curr_seed level4.map)
+  output=$(./lode_runner -delay 0 -debug off -seed $curr_seed level3.map)
   curr_seed=$(expr $curr_seed + 1)
 
   # Check if the output contains "Congrats" or "Over"
