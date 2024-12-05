@@ -1,0 +1,17 @@
+\chapter{Préliminaires}
+\label{cp:preliminaires}
+
+Avant de commencer à détailler la stratégie utilisée, il est nécessaire de présenter certaines notions sur lesquelles elle repose.
+
+\section{Tas-Min}
+
+Un tas-min est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. C'est un cas particulier d'une file de priorité, où l'élément le plus petit est toujours en tête de file.
+\newline
+Notre tas-min est implémenté sous forme d'un tableau d'entiers, où chaque élément est un nœud de l'arbre binaire représentant le tas. Les indices des éléments sont choisis de manière à ce que le fils gauche de l'élément à l'indice $i$ soit à l'indice $2i+1$ et le fils droit à l'indice $2i+2$.
+\newline
+Pour maintenir la propriété de tas-min, nous avons besoin de deux fonctions : \texttt{heapify} et \texttt{insert}. La première fonction permet de rétablir la propriété de tas-min après une suppression d'élément, tandis que la seconde permet d'ajouter un élément au tas.
+
+
+\section{Algorithme A*}
+
+L'algorithme A* est un algorithme de recherche de chemin dans un graphe pondéré. Il est basé sur l'algorithme de Dijkstra, mais utilise une heuristique pour guider la recherche. L'algorithme A* est utilisé pour trouver le chemin le plus court entre un nœud de départ et un nœud d'arrivée dans un graphe.
