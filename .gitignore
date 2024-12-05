@@ -13,6 +13,7 @@ lode_runner
 *.cb
 *.cb2
 .*.lb
+*.ist
 
 ## Intermediate documents:
 *.dvi
