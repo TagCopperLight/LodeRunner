@@ -1,0 +1,87 @@
+\chapter{Modules}
+\label{chap:modules}
+
+La stratégie se décompose en plusieurs modules, chacun ayant un rôle bien défini.
+Ces modules sont indépendants les uns des autres et peuvent être utilisés de manière isolée.
+
+\section{Liste des modules}
+
+\subsection{Tas-Min}
+
+\begin{table}[!htpb]
+    \label{tab:modules-min_heap}
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Prototype} & \textbf{Description} \\
+        \midrule
+        \texttt{min\_heap* create\_min\_heap} & Crée un tas-min. \\
+        \texttt{void free\_min\_heap} & Libère la mémoire allouée pour le tas-min. \\
+        \texttt{void swap} & Échange les valeurs des deux entiers. \\
+        \texttt{void swapf} & Échange les valeurs des deux flottants. \\
+        \texttt{void percolate\_up} & Conserve l'invariant du tas-min. \\
+        \texttt{void percolate\_down} & Conserve l'invariant du tas-min. \\
+        \texttt{void insert} & Insère un élément dans le tas-min. \\
+        \texttt{void modify\_priority} & Modifie la priorité d'un élément du tas-min. \\
+        \texttt{int extract\_min} & Extrait l'élément de priorité minimale du tas-min. \\
+        \texttt{bool is\_member} & Vérifie si un élément est présent dans le tas-min. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Modules relatifs au tas-min.}
+\end{table}
+
+\newpage
+
+\subsection{A*}
+
+\begin{table}[!htpb]
+    \label{tab:modules-a_star}
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Prototype} & \textbf{Description} \\
+        \midrule
+        \texttt{path* create\_path} & Crée un chemin. \\
+        \texttt{void free\_path} & Libère la mémoire allouée pour le chemin. \\
+        \texttt{bool is\_valid} & Vérifie si une action est valide. \\
+        \texttt{int weight} & Valeur d'une action, utilisée pour le calcul de la priorité. \\
+        \texttt{int get\_new\_pos} & Renvoie la position après avoir effectué une action. \\
+        \texttt{action get\_action} & Renvoie l'action à effectuer pour aller de $u$ à $v$, si ce n'est pas possible, renvoie \texttt{NONE}. \\
+        \texttt{path* a\_star} & Renvoie le chemin le plus court entre le runner et le bonus. \\
+        \texttt{child* find\_closest\_child} & Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus. \\
+        \texttt{action lode\_runner} & Action du lode-runner. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Modules relatifs à l'algorithme A*.}
+\end{table}
+
+% // Outils
+% float dist(int, int, int, int); // Calcule la distance euclidienne entre deux points (avec leurs coordonnees)
+% float vdist(int, int, levelinfo); // Calcule la distance euclidienne entre deux points (avec leurs positions dans le level)
+% character_list get_runner(character_list); // Renvoie le runner parmi les characters
+% bool is_in_bonus_list(bonus_list, bonus_list); // Verifie si un bonus est dans une liste de bonus, on utilise ses coordonnees
+% levelinfo add_enemies(levelinfo, character_list, bomb_list); // Ajoute les ennemis et les bombes a la map
+% bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie le bonus le plus proche du runner, en evitant ceux deja vus
+% character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
+% bool is_valid_closest(int, action, levelinfo); // Verifie si une action est dangereuse, utilisée pour le mode closest
+% void special_moves(character_list, character_list, int*, levelinfo); // Gere toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...)
+
+\subsection{Outils}
+
+\begin{table}[!htpb]
+    \label{tab:modules-tools}
+    \begin{tabularx}{\textwidth}{lX}
+        \toprule
+        \textbf{Prototype} & \textbf{Description} \\
+        \midrule
+        \texttt{float dist} & Calcule la distance euclidienne entre deux points (avec leurs coordonnées). \\
+        \texttt{float vdist} & Calcule la distance euclidienne entre deux points (avec leurs positions dans le niveau). \\
+        \texttt{character\_list get\_runner} & Renvoie le runner parmi les personnages. \\
+        \texttt{bool is\_in\_bonus\_list} & Vérifie si un bonus est dans une liste de bonus, on utilise ses coordonnées. \\
+        \texttt{levelinfo add\_enemies} & Ajoute les ennemis et les bombes à la carte. \\
+        \texttt{bonus\_list get\_closest\_bonus} & Renvoie le bonus le plus proche du runner, en évitant ceux déjà vus. \\
+        \texttt{character\_list get\_closest\_enemy} & Renvoie l'ennemi le plus proche du runner, sur la même ligne. \\
+        \texttt{bool is\_valid\_closest} & Vérifie si une action est dangereuse, utilisée pour le mode \texttt{closest}. \\
+        \texttt{void special\_moves} & Gère toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...). \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Modules relatifs aux outils.}
+\end{table}

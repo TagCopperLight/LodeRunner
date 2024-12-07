@@ -1,0 +1,603 @@
+\chapter{Présentation des modules}
+\label{chap:presentation-modules}
+
+\section{Module \texttt{is\_valid}}
+
+\begin{listing}[!htpb]
+    \begin{minted}{c}
+        bool is_valid(int pos, action a, levelinfo level, levelinfo air_level);
+    \end{minted}
+    \caption{Prototype de \texttt{is\_valid} en C.}
+    \label{listing:c-is_valid-prototype}
+\end{listing}
+
+\subsection{Description}
+
+Dans l'algorithme A*, on a besoin de récupérer touts les voisins d'une case donnée.
+On appelle voisin d'une case, une case atteignable en un seul mouvement possible.
+\newline\newline
+La fonction \texttt{is\_valid} prend donc en paramètre une action, et retourne un booléen indiquant si cette action est valide.
+
+\subsection{Paramètres}
+
+\begin{table}[!htpb]
+    \label{tab:parameters-is_valid}
+    \begin{tabularx}{\textwidth}{lXX}
+        \toprule
+        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        \texttt{pos} & \texttt{int} & Position de la case à tester. \\
+        \texttt{a} & \texttt{action} & Action à tester. \\
+        \texttt{level} & \texttt{levelinfo} & Structure contenant les informations du niveau. \\
+        \texttt{air\_level} & \texttt{levelinfo} & Structure contenant les informations du niveau sans les ennemis. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Paramètres de la fonction \texttt{is\_valid}.}
+\end{table}
+
+\subsection{Choix d'implementation}
+
+On choisit d'utiliser un switch sur l'action à tester puisque chaque action a des conditions différentes.
+
+\subsection{Pseudo-code}
+
+\begin{longlisting}
+    \begin{minted}{text}
+        Fonction is_valid en booléen
+        Parametres :
+            pos en entier
+            a en action
+            level en levelinfo
+            air_level en levelinfo
+        Declarations :
+            x en entier
+            y en entier
+            map en tableau de caractères
+            air_map en tableau de caractères
+            not_in_air en booléen
+        Debut
+            x <- pos % level.xsize // On récupère la coordonnée x de la case
+            y <- pos / level.xsize // On récupère la coordonnée y de la case
+            map <- level.map // On récupère la carte du niveau
+            air_map <- air_level.map // On récupère la carte du niveau sans les ennemis
+
+            // Variable indiquant si le joueur n'est pas en l'air
+            not_in_air <- (air_map[y + 1][x] != PATH && air_map[y + 1][x] != CABLE && air_map[y + 1][x] != BOMB) || air_map[y - 1][x] == CABLE
+            // Si la case en dessous du joueur n'est pas un chemin, un cable ou une bombe, ou si la case au dessus du joueur est un cable, alors le joueur n'est pas en l'air
+
+            Selon a faire
+                Cas NONE :
+                    Retourner VRAI
+                Cas UP :
+                    // On ne peut monter que si on est sur une echelle et qu'il n'y a pas de mur au dessus
+                    Si map[y][x] == LADDER et map[y - 1][x] != WALL et map[y - 1][x] != FLOOR et map[y - 1][x] != ENEMY alors
+                        Retourner VRAI
+                Cas DOWN :
+                    // On ne peut descendre que si il y a une echelle, un chemin ou un cable en dessous
+                    // On laisse la possibilite de descendre si le joueur est en l'air
+                    Si (map[y + 1][x] == LADDER ou map[y + 1][x] == PATH ou map[y + 1][x] == CABLE) et map[y + 1][x] != ENEMY alors
+                        Retourner VRAI
+                Cas LEFT :
+                    // On ne peut aller a gauche que si il n'y a pas de mur a gauche et que le joueur n'est pas en l'air
+                    // C'est un petit hack car le moteur avance de plusieurs tour de jeu sans utiliser le code du joueur tant qu'il tombe, mais le A* ne le sait pas,
+                    // alors on se debrouille pour que la seule action possible soit DOWN
+                    Si map[y][x - 1] != WALL et map[y][x - 1] != FLOOR et map[y][x - 1] != ENEMY et map[y][x - 1] != DEAD et map[y + 1][x - 1] != ENEMY et not_in_air alors
+                        Retourner VRAI
+                Cas RIGHT :
+                    // De meme pour la droite
+                    Si map[y][x + 1] != WALL et map[y][x + 1] != FLOOR et map[y][x + 1] != ENEMY et map[y][x + 1] != DEAD et map[y + 1][x + 1] != ENEMY et not_in_air alors
+                        Retourner VRAI
+                Defaut :
+                    Afficher "ERROR: Invalid action"
+                    Sortir du programme
+            Fin Selon
+
+            Retourner FAUX
+        Fin
+    \end{minted}
+    \caption{Pseudo-code de la fonction \texttt{is\_valid}.}
+    \label{listing:c-is_valid}
+\end{longlisting}
+
+\newpage
+
+\section{Module \texttt{get\_closest\_bonus}}
+
+\begin{listing}[!htpb]
+    \begin{minted}{c}
+        bonus_list get_closest_bonus(bonus_list bonusl, character_list runner, bonus_list already_seen);
+    \end{minted}
+    \caption{Prototype de \texttt{get\_closest\_bonus} en C.}
+    \label{listing:c-get_closest_bonus-prototype}
+\end{listing}
+
+\subsection{Description}
+
+Pour A*, on a besoin de destinations : les bonus.
+Mais, afin de finir le niveau plus rapidement (et pour éviter des cas de boucles infinies), on veut aller sur le bonus le plus proche du runner.
+\newline
+De plus, si le bonus le plus proche est inaccessible pour des raisons quelconques, on veut aller sur le second bonus le plus proche, et ainsi de suite.
+C'est pourquoi on a besoin de la liste des bonus déjà vus, pour ne pas les revoir.
+
+\subsection{Paramètres}
+
+\begin{table}[!htpb]
+    \begin{tabularx}{\textwidth}{lXX}
+        \toprule
+        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        \texttt{bonusl} & \texttt{bonus\_list} & Liste des bonus. \\
+        \texttt{runner} & \texttt{character\_list} & Liste des personnages. \\
+        \texttt{already\_seen} & \texttt{bonus\_list} & Liste des bonus déjà vus. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Paramètres de la fonction \texttt{get\_closest\_bonus}.}
+    \label{tab:parameters-get_closest_bonus}
+\end{table}
+
+\subsection{Choix d'implementation}
+
+Les listes de bonus sont des listes chaînées, on choisit donc une boucle tant que pour parcourir la liste des bonus.
+De même, la fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on ne la détaille donc pas.
+
+\subsection{Pseudo-code}
+
+\begin{listing}[!htpb]
+    \begin{minted}{text}
+        Fonction get_closest_bonus en bonus_list
+        Parametres :
+            bonusl en bonus_list
+            runner en character_list
+            already_seen en bonus_list
+        Declarations :
+            closest_bonus en bonus_list
+            best_dist en reel
+            current en bonus_list
+        Debut
+            closest_bonus <- NULL
+
+            Si bonusl == NULL alors
+                // Si la liste des bonus est vide, il n'y a pas de bonus le plus proche
+                Retourner NULL
+            Fin Si
+
+            best_dist <- 100000 // On initialise la meilleure distance à une valeur très grande
+            current <- bonusl // On initialise le bonus courant à la tête de la liste des bonus
+
+            Tant que current != NULL faire
+                // On parcourt la liste des bonus
+                Si dist(current->b.x, current->b.y, runner->c.x, runner->c.y) < best_dist et non is_in_bonus_list(current, already_seen) alors
+                    closest_bonus <- current
+                    best_dist <- dist(current->b.x, current->b.y, runner->c.x, runner->c.y)
+                Fin Si
+                current <- current->next // On passe au bonus suivant
+            Fin Tant que
+
+            Retourner closest_bonus // On retourne le bonus le plus proche
+        Fin
+    \end{minted}
+    \caption{Pseudo-code de la fonction \texttt{get\_closest\_bonus}.}
+    \label{listing:c-get_closest_bonus}
+\end{listing}
+
+\newpage
+
+\section{Module \texttt{add\_ennemis}}
+
+\begin{listing}[!htpb]
+    \begin{minted}{c}
+        levelinfo add_ennemis(levelinfo level, character_list characterl, bomb_list bombl);
+    \end{minted}
+    \caption{Prototype de \texttt{add\_ennemis} en C.}
+    \label{listing:c-add_ennemis-prototype}
+\end{listing}
+
+\subsection{Description}
+
+Pour que A* prenne en compte les ennemis, et ne tombe pas dans les trous causés par les bombes, on ajoute les ennemis et les bombes à la carte.
+C'est à dire qu'on créé une nouvelle carte, où les ennemis et les bombes sont des obstacles.
+De plus, si un ennemi est sur une bombe, on considère que l'ennemi est mort, (on peut marcher dessus).
+
+\subsection{Paramètres}
+
+\begin{table}[!htpb]
+    \begin{tabularx}{\textwidth}{lXX}
+        \toprule
+        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        \texttt{level} & \texttt{levelinfo} & Structure contenant les informations du niveau. \\
+        \texttt{characterl} & \texttt{character\_list} & Liste des personnages. \\
+        \texttt{bombl} & \texttt{bomb\_list} & Liste des bombes. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Paramètres de la fonction \texttt{add\_ennemis}.}
+    \label{tab:parameters-add_ennemis}
+\end{table}
+
+\subsection{Choix d'implementation}
+
+Les listes d'ennemis et de bombes sont des listes chaînées, on choisit donc une boucle tant que pour parcourir ces listes.
+Afin de s'assurer qu'on a les bons type de personnages, on utilise un Si / Sinon.
+
+\subsection{Pseudo-code}
+
+\begin{longlisting}
+    \begin{minted}{text}
+        Fonction add_ennemis en levelinfo
+        Parametres :
+            level en levelinfo
+            characterl en character_list
+            bombl en bomb_list
+        Declarations :
+            currentb en bomb_list
+            current en character_list
+        Debut
+            currentb <- bombl // On initialise currentb à la tête de la liste des bombes
+
+            Tant que currentb != NULL faire
+                // On itère sur les bombes
+                level.map[currentb->y][currentb->x] <- BOMB
+                currentb <- currentb->next // On passe à la bombe suivante
+            Fin Tant que
+
+            current <- characterl // On initialise current à la tête de la liste des personnages
+
+            Tant que current != NULL faire
+                // On itère sur les personnages
+                Si current->c.item == ENEMY alors
+                    // Si le personnage est un ennemi (on pourrait tomber sur le runner)
+                    Si level.map[current->c.y][current->c.x] == BOMB ou level.map[current->c.y][current->c.x] == DEAD alors
+                        level.map[current->c.y][current->c.x] <- DEAD
+                    Sinon
+                        level.map[current->c.y][current->c.x] <- ENEMY
+                    Fin Si
+                Fin Si
+                current <- current->next // On passe au personnage suivant
+            Fin Tant que
+
+            Retourner level
+        Fin
+    \end{minted}
+    \caption{Pseudo-code de la fonction \texttt{add\_ennemis}.}
+    \label{listing:c-add_ennemis}
+\end{longlisting}
+
+\newpage
+
+\section{Module \texttt{combat\_moves}}
+\label{sec:move-to-combat}
+
+\begin{listing}[!htpb]
+    \begin{minted}{c}
+        void combat_moves(character_list runner, character_list closest_enemy, int* move_to_combat, levelinfo level);
+    \end{minted}
+    \caption{Prototype de \texttt{combat\_moves} en C.}
+    \label{listing:c-combat_moves-prototype}
+\end{listing}
+
+\subsection{Description}
+
+Si A* ne trouve aucun chemin pour aucun bonus, le mode de mouvement spécial est activé.
+Dans ce mode, le runner va essayer de se rapprocher du bonus le plus proche, tout en évitant les ennemis.
+Pour savoir comment se déplacer, si un ennemi est dangeureux, on utilise la procédure \texttt{combat\_moves}.
+
+
+\subsection{Paramètres}
+
+\begin{table}[!htpb]
+    \begin{tabularx}{\textwidth}{lXX}
+        \toprule
+        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        \texttt{runner} & \texttt{character\_list} & Runner \\
+        \texttt{closest\_enemy} & \texttt{character\_list} & Ennemi le plus proche. \\
+        \texttt{move\_to\_combat} & \texttt{int*} & Pointeur vers l'action à effectuer. \\
+        \texttt{level} & \texttt{levelinfo} & Structure contenant les informations du niveau. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Paramètres de la procédure \texttt{combat\_moves}.}
+    \label{tab:parameters-combat_moves}
+\end{table}
+
+\subsection{Choix d'implementation}
+
+Cette procédure est assez complexe, surtout, elle n'a pas été implémentée en une seule fois, mais petit à petit.
+Cela vient du fait que les mouvements spéciaux sont assez complexes, et qu'il est difficile de tout prévoir dès le début, il faut tester et ajuster.
+J'ai tout de même essayé de faire en sorte que la procédure soit la plus lisible possible, en utilisant des commentaires et des variables explicites.
+On utilise donc des Si / Sinon pour tester les différentes conditions.
+De plus, on utilse une procédure car on modifie le pointeur \texttt{move\_to\_combat} en fonction de sa valeur actuelle.
+
+\subsection{Pseudo-code}
+
+\begin{longlisting}
+    \begin{minted}{text}
+        Procéduer combat_moves
+        Parametres :
+            runner en character_list
+            closest_enemy en character_list
+            @move_to_combat en entier 
+            level en levelinfo
+        Declarations :
+            down_left en caractère
+            down_right en caractère
+            top_left en caractère
+            top_right en caractère
+            left en caractère
+            right en caractère
+            center en caractère
+            can_right en booléen
+            can_left en booléen
+            distance en entier
+            can_up en booléen
+            can_down en booléen
+        Debut
+            // On récupère les cases autour du runner
+            down_left <- level.map[runner->c.y + 1][runner->c.x - 1]
+            down_right <- level.map[runner->c.y + 1][runner->c.x + 1]
+            top_left <- level.map[runner->c.y - 1][runner->c.x - 1]
+            top_right <- level.map[runner->c.y - 1][runner->c.x + 1]
+            left <- level.map[runner->c.y][runner->c.x - 1]
+            right <- level.map[runner->c.y][runner->c.x + 1]
+            center <- level.map[runner->c.y][runner->c.x]
+
+            // On vérifie si on peut se déplacer à droite ou à gauche, et si on ne tombe pas en le faisant
+            can_right <- is_valid(runner->c.y * level.xsize + runner->c.x, RIGHT, level, level)
+            can_left <- is_valid(runner->c.y * level.xsize + runner->c.x, LEFT, level, level)
+            can_right <- can_right et (down_right != BOMB et down_right != PATH)
+            can_left <- can_left et (down_left != BOMB et down_left != PATH)
+
+            Si closest_enemy != NULL alors
+                // Si il y a un ennemi dangeureux (donc que l'on est en mode combat)
+                Si *move_to_combat == -1 alors
+                    // Si on n'a pas encore décidé de comment se déplacer
+                    distance <- runner->c.y - closest_enemy->c.y // On calcule la distance verticale
+                    Si distance == 0 alors
+                        // Combat horizontal
+                        distance <- runner->c.x - closest_enemy->c.x // On calcule la distance horizontale
+                        Si level.map[runner->c.y - 1][runner->c.x] == CABLE et level.map[runner->c.y + 1][runner->c.x] == PATH alors
+                            // On est sur un cable, on ne peut pas poser de bombe, on saute
+                            *move_to_combat <- DOWN
+                        Sinon Si distance > 0 et distance < 4 alors
+                            // A gauche
+                            Si (down_left == FLOOR ou down_left == BOMB) et top_left != CABLE et left != ENEMY alors
+                                Si down_left == BOMB alors
+                                    // Il y a deja une bombe, on attend
+                                    *move_to_combat <- NONE
+                                Sinon
+                                    // On pose une bombe a gauche
+                                    *move_to_combat <- BOMB_LEFT
+                                Fin Si
+                            Sinon
+                                // On ne peut pas poser de bombe, on se deplace a droite
+                                Si can_right alors *move_to_combat <- RIGHT
+                            Fin Si
+                        Sinon Si distance < 0 et distance > -4 alors
+                            // A droite
+                            Si (down_right == FLOOR ou down_right == BOMB) et top_right != CABLE et right != ENEMY alors
+                                Si down_right == BOMB alors
+                                    // Il y a deja une bombe, on attend
+                                    *move_to_combat <- NONE
+                                Sinon
+                                    // On pose une bombe a droite
+                                    *move_to_combat <- BOMB_RIGHT
+                                Fin Si
+                            Sinon
+                                // On ne peut pas poser de bombe, on se deplace a gauche
+                                Si can_left alors *move_to_combat <- LEFT
+                            Fin Si
+                        Fin Si
+
+                        // Ces mouvements ont priorite sur les autres
+
+                        Si can_right alors
+                            Si (left == LADDER ou center == LADDER ou (left == ENEMY et top_left == LADDER)) et distance > 0 alors
+                                // On se deplace a droite si on est sur une echelle, ou si on a une echelle a gauche
+                                *move_to_combat <- RIGHT
+                            Fin Si
+                        Fin Si
+
+                        Si can_left alors
+                            Si (right == LADDER ou center == LADDER ou (right == ENEMY et top_right == LADDER)) et distance < 0 alors
+                                // On se deplace a gauche si on est sur une echelle, ou si on a une echelle a droite
+                                *move_to_combat <- LEFT
+                            Fin Si
+                        Fin Si
+                    Sinon
+                        // Combat vertical (sur une echelle)
+                        bool can_up <- is_valid(runner->c.y * level.xsize + runner->c.x, UP, level, level)
+                        bool can_down <- is_valid(runner->c.y * level.xsize + runner->c.x, DOWN, level, level)
+                        Si distance > 0 et can_down alors
+                            // On descend si un ennemi est au dessus
+                            *move_to_combat <- DOWN
+                        Sinon Si distance < 0 et can_up alors
+                            // On monte si un ennemi est en dessous
+                            *move_to_combat <- UP
+                        Fin Si
+
+                        Si level.map[runner->c.y][runner->c.x] == PATH ou level.map[runner->c.y + 1][runner->c.x] == FLOOR alors
+                            // Si on est en haut ou en bas d'une echelle, alors c'est une erreur et on est en pas en mode combat, on remmet move_to_combat a -1
+                            *move_to_combat <- -1
+                        Fin Si
+                    Fin Si
+                Fin Si
+            Fin Si
+        Fin
+    \end{minted}
+    \caption{Pseudo-code de la procédure \texttt{combat\_moves}.}
+    \label{listing:c-combat_moves}
+\end{longlisting}
+
+\newpage
+
+\section{Module \texttt{lode\_runner}}
+
+\begin{listing}[!htpb]
+    \begin{minted}{c}
+        action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl, bomb_list bombl);
+    \end{minted}
+    \caption{Prototype de \texttt{lode\_runner} en C.}
+    \label{listing:c-lode_runner-prototype}
+\end{listing}
+
+\subsection{Description}
+
+La fonction \texttt{lode\_runner} est la fonction principale de notre programme, c'est elle qui va appeler toutes les autres fonctions pour trouver le meilleur chemin pour le runner.
+Elle renvoie l'action à effectuer par le runner.
+
+\subsection{Paramètres}
+
+\begin{table}[!htpb]
+    \begin{tabularx}{\textwidth}{lXX}
+        \toprule
+        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
+        \midrule
+        \texttt{level} & \texttt{levelinfo} & Structure contenant les informations du niveau. \\
+        \texttt{characterl} & \texttt{character\_list} & Liste des personnages. \\
+        \texttt{bonusl} & \texttt{bonus\_list} & Liste des bonus. \\
+        \texttt{bombl} & \texttt{bomb\_list} & Liste des bombes. \\
+        \bottomrule
+    \end{tabularx}
+    \caption{Paramètres de la fonction \texttt{lode\_runner}.}
+    \label{tab:parameters-lode_runner}
+\end{table}
+
+\subsection{Choix d'implementation}
+
+Le point principal de cette fonction est l'itération sur les bonus.
+Elle est donc centrée autour d'une boucle tant que (les bonnus sont des listes chaînées).
+On utilise des variables pour stocker les actions à effectuer, et on les retourne à la fin de la fonction.
+
+\subsection{Pseudo-code}
+
+\begin{longlisting}
+    \begin{minted}{text}
+        Fonction lode_runner en action
+        Parametres :
+            level en levelinfo
+            characterl en character_list
+            bonusl en bonus_list
+            bombl en bomb_list
+        Declarations :
+            runner en character_list
+            astar_level en levelinfo
+            already_seen en bonus_list
+            closest_bonus en bonus_list
+            to_exit en booléen
+            move_to_combat en entier
+            move_to_closest en entier
+            move_to_path en entier
+            move_to_skipped en entier
+            @pat en path
+            @c en child
+            tmp en bonus_list
+            v en entier
+        Debut
+            runner <- get_runner(characterl) // On récupère le runner
+            level <- add_enemies(level, characterl, bombl) // On ajoute les ennemis à la carte
+            // On créé un niveau pour A* avec des zones autour des ennemis. Le but est que le runner ne s'approche pas trop des ennemis
+            astar_level <- get_astar_level(level, characterl) 
+
+            already_seen <- NULL // On initialise la liste des bonus déjà vus
+            closest_bonus <- get_closest_bonus(bonusl, runner, already_seen) // On récupère le bonus le plus proche
+
+            Si bonusl == NULL alors
+                // Si la liste des bonus est vide, c'est qu'on les a tous récupérés, on va donc vers la sortie
+                // On crée un bonus fictif qui possède les coordonnées de la sortie
+                closest_bonus <- malloc(sizeof(bonus_list))
+                bonus b <- {level.xexit, level.yexit}
+                closest_bonus->b <- b
+                to_exit <- VRAI
+            Fin Si
+
+            // Initialisation des variables
+            // Ces variables vont stocker les actions à effectuer, elles sont initialisées à -1 pour qu'on sache si elles ont été modifiées
+            move_to_combat <- -1
+            move_to_closest <- -1
+            move_to_path <- -1
+            move_to_skipped <- -1
+
+            Tant que closest_bonus != NULL faire
+                // On itère sur les bonus
+                pat <- a_star(runner, closest_bonus, astar_level, level) // On calcule le chemin vers le bonus le plus proche
+                Si level.map[closest_bonus->b.y][closest_bonus->b.x] == ENEMY alors
+                    // Cas spécial : si un ennemi est sur le bonus, on ne peut pas y aller (A* ne trouvera pas de chemin)
+                    int runner_pos <- runner->c.y * level.xsize + runner->c.x
+                    int closest_bonus_pos <- closest_bonus->b.y * level.xsize + closest_bonus->b.x
+                    c <- find_closest_child(pat->p, runner_pos, closest_bonus_pos, level) // On trouve le chemin qui nous rapproche le plus du bonus
+                    move_to_skipped <- get_action(runner_pos, c->pos, level) // On stocke l'action à effectuer
+                    // On ajoute le bonus à la liste des bonus déjà vus
+                    tmp <- malloc(sizeof(bonus_list))
+                    tmp->b <- closest_bonus->b
+                    tmp->next <- already_seen
+                    already_seen <- tmp
+                    Si non to_exit alors
+                        // Si il y a d'autres bonus, on récupère le plus proche pour continuer la boucle
+                        closest_bonus <- get_closest_bonus(bonusl, runner, already_seen)
+                    Fin Si
+                    Continuer
+                Fin Si
+
+                Si move_to_closest == -1 alors
+                    // Si on n'a toujours initialisé move_to_closest, on le fait
+                    // move_to_closest est l'action qui nous rapproche du bonus le plus proche (même s'il est inaccessible)
+                    int runner_pos <- runner->c.y * level.xsize + runner->c.x
+                    int closest_bonus_pos <- closest_bonus->b.y * level.xsize + closest_bonus->b
+
+                    c <- find_closest_child(pat->p, runner_pos, closest_bonus_pos, level) // On trouve le chemin qui nous rapproche le plus du bonus
+                    move_to_closest <- get_action(runner_pos, c->pos, level) // On stocke l'action à effectuer
+                Fin Si
+
+                Si pat->found alors
+                    // Si on a trouvé un chemin, on le suit
+                    v <- closest_bonus->b.y * level.xsize + closest_bonus->b.x
+                    Tant que pat->p[v] != runner->c.y * level.xsize + runner->c.x faire
+                        // pat->p[v] est le parent de v, on remonte le chemin pour trouver l'action à effectuer
+                        v <- pat->p[v]
+                    Fin Tant que
+
+                    move_to_path <- get_action(runner->c.y * level.xsize + runner->c.x, v, level) // On stocke l'action à effectuer
+
+                Sinon Si pat->heap->size != 0 alors
+                    // Si le chemin est plus long que la taille du tas, c'est une erreur
+                    Afficher "ERROR: Path is longer than heap size"
+                    Sortir du programme
+                Sinon
+                    // Si on n'a pas trouvé de chemin, on est en mode combat
+                    combat_moves(runner, get_closest_enemy(characterl, runner, level), &move_to_combat, level)
+                Fin Si
+
+                // On ajoute le bonus à la liste des bonus déjà vus
+                tmp <- malloc(sizeof(bonus_list))
+                tmp->b <- closest_bonus->b
+                tmp->next <- already_seen
+                already_seen <- tmp
+                Si non to_exit alors
+                    // Si il y a d'autres bonus, on récupère le plus proche pour continuer la boucle
+                    closest_bonus <- get_closest_bonus(bonusl, runner, already_seen)
+                Sinon
+                    closest_bonus <- NULL
+                Fin Si
+            Fin Tant que
+
+            Si move_to_path != -1 alors
+                // On a trouvé un chemin, on le suit
+                Retourner move_to_path
+            Sinon Si move_to_combat != -1 alors
+                // On est en mode combat
+                Retourner move_to_combat
+            Sinon Si move_to_closest != -1 alors
+                // On n'a pas trouvé de chemin, on se rapproche du bonus
+                Si is_valid_closest(runner->c.y * level.xsize + runner->c.x, move_to_closest, astar_level) alors
+                    Retourner move_to_closest
+                Sinon
+                    Retourner NONE
+                Fin Si
+            Sinon
+                // Les bonus sont inaccessibles, on cherche le chemin qui nous rapproche le plus d'un bonus
+                Retourner move_to_skipped
+            Fin Si
+        Fin
+    \end{minted}
+    \caption{Pseudo-code de la fonction \texttt{lode\_runner}.}
+    \label{listing:c-lode_runner}
+\end{longlisting}
