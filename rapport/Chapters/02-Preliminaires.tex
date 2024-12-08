@@ -6,7 +6,7 @@ Avant de commencer à détailler la stratégie utilisée, il est nécessaire de 
 \section{Tas-Min}
 \label{sec:tas-min}
 
-Un Tas-min est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. 
+Un Tas-min \citep{tasmin} est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. 
 C'est un cas particulier d'une file de priorité, où l'élément ayant la plus petite priorité est toujours en tête de file.
 \newline\newline
 Notre Tas-min est implémenté sous forme d'un tableau d'entiers, où chaque élément est un nœud de l'arbre binaire représentant le tas.
@@ -20,10 +20,8 @@ La racine de l'arbre est à l'indice 0.
     \label{fig:array}
 \end{figure}
 
-Pour gérer les Tas-min, nous avons besoin de trois procédures : \texttt{insert}, \texttt{modify\_}
-\newline
-\texttt{priority} et \texttt{extract\_min}.
-La première permet d'ajouter un élément au tas, la deuxième de modifier la priorité d'un élément et la troisième de récupérer l'élément de priorité minimale.
+Pour gérer les Tas-min, nous avons besoin de deux procédures : \texttt{insert} et \texttt{extract\_min}.
+La première permet d'ajouter un élément au tas et la deuxième de récupérer l'élément de priorité minimale.
 \newline
 On sait que l'élément de priorité minimale est toujours à la racine de l'arbre, on peut donc le récupérer en temps constant.
 En cas d'insertion, de suppression ou de modification de priorité, on doit s'assurer que le tas reste bien un Tas-min.
@@ -33,8 +31,6 @@ Pour cela, on utilise une des deux procédures suivantes : \texttt{percolate\_up
 
 On ajoute l'élément à la fin du tableau et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un Tas-min.
 La procédure \texttt{percolate\_up} remonte l'élément ajouté tant que son parent a une priorité plus grande que la sienne.
-\newline\newline
-Son pseudo-code est le suivant :
 
 \begin{listing}[!htpb]
     \begin{minted}{text}
@@ -54,20 +50,12 @@ Son pseudo-code est le suivant :
     \label{listing:percolate_up}
 \end{listing}
 
-\subsection{Procédure \texttt{modify\_priority}}
-
-On modifie la priorité de l'élément et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un Tas-min.
-
-\newpage
-
 \subsection{Procédure \texttt{extract\_min}}
 
 On récupère l'élément de priorité minimale, on le remplace par le dernier élément du tableau et on appelle \texttt{percolate\_down}.
 La procédure \texttt{percolate\_down} descend l'élément remplacé jusqu'à ce que ses fils aient une priorité plus grande que la sienne.
-\newline\newline
-Son pseudo-code est le suivant :
 
-\begin{listing}[!htpb]
+\begin{longlisting}
     \begin{minted}{text}
     Procédure percolate_down
     Parametres :
@@ -94,7 +82,7 @@ Son pseudo-code est le suivant :
     \end{minted}
     \caption{Procédure \texttt{percolate\_down}.}
     \label{listing:percolate_down}
-\end{listing}
+\end{longlisting}
 
 \subsection{En C}
 
@@ -112,8 +100,6 @@ En C, on utilise une structure \texttt{min\_heap} pour représenter le Tas-min.
     \caption{Structure \texttt{min\_heap} en C.}
     \label{listing:c-min_heap}
 \end{listing}
-
-\newpage
 
 On dispose en plus des fonctions suivantes pour manipuler les Tas-min :
 
@@ -141,6 +127,8 @@ L'algorithme A* est utilisé pour trouver le chemin le plus court entre un nœud
 \newline
 Il utilise une file de priorité pour stocker les nœuds à explorer, dans laquelle la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
 On utilisera ici un Tas-min (\autoref{sec:tas-min}) pour implémenter cette file de priorité.
+
+\newpage
 
 \subsection{Pseudo-code}
 
