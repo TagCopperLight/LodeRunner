@@ -7,20 +7,21 @@ On commence par récupérer la liste des bonus par ordre croissant de distance, 
 \newline
 Si on trouve un chemin vers un des bonus, le runner le prendra : A* a une priorité sur toutes les autres décisions.
 \newline
-Si l'algorithme ne trouve aucun chemin vers aucun bonus (au plus il y a d'ennemis, au plus ça arrive), le runner utilise des fonctions de mouvements dites "spéciales" pour se déplacer.
+Si l'algorithme ne trouve aucun chemin vers aucun bonus (ce qui devient plus probable à mesure que le nombre d'ennemis augmente), le runner utilise des fonctions de mouvements dits "spéciaux" pour se déplacer.
 \newline\newline
-Ceci veut dire que A* doit prendre en compte les ennemis, mais il y a plusieurs avantages à utiliser cette stratégie :
+Ceci signifie que A* doit prendre en compte les ennemis, mais il y a plusieurs avantages à utiliser cette stratégie :
 
 \begin{enumerate}
     \item On fait une confiance totale à A* : s'il sait qu'un ennemi n'est pas dangereux, il n'y a pas besoin de faire de mouvements pour l'éviter.
-    \item On ne fait pas de mouvements inutiles : si A* trouve un chemin, on peut prouver que c'est le chemin le plus court.
-    \item Si A* ne trouve pas de chemin, on peut être sûr qu'il n'y en a pas, et on peut donc se permettre de faire des mouvements "spéciaux".
+    \item On ne fait pas de mouvements inutiles : si A* trouve un chemin, c'est le chemin le plus court.
+    \item Si A* ne trouve pas de chemin, on est sûr qu'il n'y en a pas, et on peut donc se permettre de faire des mouvements "spéciaux".
 \end{enumerate}
-Néanmoins, il y a un inconvénient : on ne peut pas prédire l'évolution de la position des ennemis, les choix de A* se basent sur la situation à l'instant $t$.
+Néanmoins, il y a un inconvénient : on ne peut pas prédire l'évolution de la position des ennemis.
+Autrement dit les choix de A* se basent sur la situation à l'instant $t$.
 \newline
 C'est pour cela qu'on l'appelle à chaque tour, pour prendre en compte les nouvelles positions des ennemis.
 \newline\newline
-Heureusement, l'imprécision de la position des ennemis augmente avec la distance, et leur dangerosité diminue.
+Heureusement, contrairement à l'imprécision de la position des ennemis qui augmente avec la distance, la dangerosité des ennemis diminue.
 L'algorithme peut être à peu près sûr de la position des ennemis proches (les ennemis dangereux), et donc de les éviter.
 \newpage
 De plus, au lieu de passer la carte à A*, on lui passe une carte modifiée, dans laquelle les ennemis sont ajoutés, ainsi qu'une zone d'ennemis autour de chaque ennemi.
@@ -38,7 +39,8 @@ Cela permet d'éviter que le runner ne se rapproche à moins d'une case d'un enn
 
 \section{Mouvements spéciaux}
 
-Les mouvements spéciaux sont les mouvements effectués quand A* ne trouve aucun chemin, ils tentent, sans garantie de succès, d'améliorer la situation pour que A* puisse trouver un chemin lors d'un prochain tour.
+Les mouvements spéciaux sont les mouvements effectués quand A* ne trouve aucun chemin.
+Ils tentent, sans garantie de succès, d'améliorer la situation pour que A* puisse trouver un chemin lors d'un prochain tour.
 \newline
 Ils sont, contrairement à A*, beaucoup plus spécifiques.
 
@@ -55,7 +57,3 @@ On va alors essayer de se rapprocher du bonus, jusqu'à ce que :
     \item A* trouve un chemin.
     \item On se rapproche assez d'un ennemi pour qu'il soit considéré comme dangereux.
 \end{itemize}
-
-\subsection{Remarques}
-
-Il faut faire attention à bien conserver le premier mouvement de combat (et de rapprochement), car on va itérer sur tous les bonus, mais on souhaite se rapprocher du plus proche (le premier). 

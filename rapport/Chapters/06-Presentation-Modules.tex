@@ -14,7 +14,7 @@
 \subsection{Description}
 
 Dans l'algorithme A*, on a besoin de récupérer tous les voisins d'une case donnée.
-On appelle voisin d'une case une case atteignable en un seul mouvement possible.
+On appelle voisin d'une case une case atteignable en un seul mouvement.
 \newline\newline
 La fonction \texttt{is\_valid} prend donc en paramètre une action, et retourne un booléen indiquant si cette action est valide.
 
@@ -35,7 +35,7 @@ La fonction \texttt{is\_valid} prend donc en paramètre une action, et retourne 
     \caption{Paramètres de la fonction \texttt{is\_valid}.}
 \end{table}
 
-\subsection{Choix d'implementation}
+\subsection{Choix d'Implémentation}
 
 On choisit d'utiliser un switch sur l'action à tester puisque chaque action a des conditions différentes.
 
@@ -113,11 +113,12 @@ On choisit d'utiliser un switch sur l'action à tester puisque chaque action a d
 
 \subsection{Description}
 
-Pour A*, on a besoin de destinations : les bonus.
-Mais, afin de finir le niveau plus rapidement (et pour éviter des cas de boucles infinies), on veut aller sur le bonus le plus proche du runner.
+A*, nécessite un point de départ et un point d'arrivée.
+Dans notre cas, le point de départ est le runner, et les points d'arrivée sont les bonus.
+Mais, afin de finir le niveau plus rapidement (et pour éviter des cas de boucles infinies), on cherche à se rendre sur le bonus le plus proche du runner.
 \newline
-De plus, si le bonus le plus proche est inaccessible pour des raisons quelconques, on veut aller sur le second bonus le plus proche, et ainsi de suite.
-C'est pourquoi on a besoin de la liste des bonus déjà vus, pour ne pas les revoir.
+De plus, si le bonus le plus proche est inaccessible pour une raison quelconque, on passe aux deuxième plus proche, et ainsi de suite.
+C'est pourquoi on a besoin de la liste des bonus déjà traités, pour ne pas les traiter une seconde fois.
 
 \subsection{Paramètres}
 
@@ -135,10 +136,10 @@ C'est pourquoi on a besoin de la liste des bonus déjà vus, pour ne pas les rev
     \label{tab:parameters-get_closest_bonus}
 \end{table}
 
-\subsection{Choix d'implementation}
+\subsection{Choix d'Implémentation}
 
-Les listes de bonus sont des listes chaînées, on choisit donc une boucle tant que pour parcourir la liste des bonus.
-De même, la fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on ne la détaille donc pas.
+Les listes de bonus sont des listes chaînées, on choisit donc une boucle \texttt{Tant que} pour parcourir la liste des bonus.
+La fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on ne la détaille donc pas.
 
 \newpage
 
@@ -197,7 +198,7 @@ De même, la fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on 
 \subsection{Description}
 
 Pour que A* prenne en compte les ennemis, et ne tombe pas dans les trous créés par les bombes, on ajoute les ennemis et les bombes à la carte.
-C'est à dire qu'on créé une nouvelle carte, où les ennemis et les bombes sont des obstacles.
+C'est-à-dire qu'on crée une nouvelle carte, où les cases contenant des ennemis sont marquées comme telles.
 De plus, si un ennemi est sur une bombe, on considère que l'ennemi est mort, (on peut marcher dessus).
 
 \subsection{Paramètres}
@@ -216,10 +217,10 @@ De plus, si un ennemi est sur une bombe, on considère que l'ennemi est mort, (o
     \label{tab:parameters-add_ennemis}
 \end{table}
 
-\subsection{Choix d'implementation}
+\subsection{Choix d'Implémentation}
 
 Les listes d'ennemis et de bombes sont des listes chaînées, on choisit donc une boucle tant que pour parcourir ces listes.
-Afin de s'assurer qu'on a les bons type de personnages, on utilise un Si / Sinon.
+Afin de s'assurer qu'on a les bons type de personnage, on utilise un Si / Sinon.
 
 \subsection{Pseudo-code}
 
@@ -283,7 +284,6 @@ Si A* ne trouve aucun chemin pour aucun bonus, le mode de mouvement spécial est
 Dans ce mode, le runner va essayer de se rapprocher du bonus le plus proche, tout en évitant les ennemis.
 Pour savoir comment se déplacer, si un ennemi est dangereux, on utilise la procédure \texttt{combat\_moves}.
 
-
 \subsection{Paramètres}
 
 \begin{table}[!htpb]
@@ -301,11 +301,12 @@ Pour savoir comment se déplacer, si un ennemi est dangereux, on utilise la proc
     \label{tab:parameters-combat_moves}
 \end{table}
 
-\subsection{Choix d'implementation}
+\subsection{Choix d'Implémentation}
 
-Cette procédure est assez complexe, surtout, elle n'a pas été implémentée en une seule fois, mais petit à petit.
-Cela vient du fait que les mouvements spéciaux sont assez complexes, et qu'il est difficile de tout prévoir dès le début, il faut tester et ajuster.
+La procédure étant assez complexe, elle n'a pas été implémentée en une seule fois, mais petit à petit.
+Cela vient du fait que les mouvements spéciaux sont assez complexes, et qu'il est difficile de tout prévoir dès le début: il faut tester et ajuster.
 J'ai tout de même essayé de faire en sorte que la procédure soit la plus lisible possible, en utilisant des commentaires et des variables explicites.
+\newline\newline
 On utilise donc des Si / Sinon pour tester les différentes conditions.
 De plus, on utilise une procédure car on modifie le pointeur \texttt{move\_to\_combat} en fonction de sa valeur actuelle.
 
@@ -463,7 +464,7 @@ Elle renvoie l'action à effectuer par le runner.
     \label{tab:parameters-lode_runner}
 \end{table}
 
-\subsection{Choix d'implementation}
+\subsection{Choix d'Implémentation}
 
 Le point principal de cette fonction est l'itération sur les bonus.
 Elle est donc centrée autour d'une boucle tant que (les bonus sont des listes chaînées).
