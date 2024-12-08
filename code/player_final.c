@@ -63,9 +63,9 @@ character_list get_runner(character_list); // Renvoie le runner parmi les charac
 bool is_in_bonus_list(bonus_list, bonus_list); // Verifie si un bonus est dans une liste de bonus, on utilise ses coordonnees
 levelinfo add_enemies(levelinfo, character_list, bomb_list); // Ajoute les ennemis et les bombes a la map
 bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie le bonus le plus proche du runner, en evitant ceux deja vus
-character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
+character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi considere dangereux le plus proche du runner
 bool is_valid_closest(int, action, levelinfo); // Verifie si une action est dangereuse, utilisée pour le mode closest
-void special_moves(character_list, character_list, int*, levelinfo); // Gere toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...)
+void combat_moves(character_list, character_list, int*, levelinfo); // Gere les actions en mode combat
 
 // A*
 path* create_path(int, levelinfo);
@@ -215,10 +215,12 @@ bool is_member(min_heap* heap, int key){
 }
 
 float dist(int x1, int y1, int x2, int y2){
+  // Distance euclidienne entre deux points (avec leurs coordonnees)
   return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 float vdist(int pos1, int pos2, levelinfo level){
+  // Distance euclidienne entre deux points (avec leurs positions dans le level)
   int x1 = pos1 % level.xsize;
   int y1 = pos1 / level.xsize;
   int x2 = pos2 % level.xsize;
@@ -273,6 +275,7 @@ bool is_valid(int pos, action a, levelinfo level, levelinfo air_level){
 }
 
 bool is_valid_closest(int pos, action a, levelinfo level){
+  // Evite que le mode closest saute sur un ennemi
   int x = pos % level.xsize;
   int y = pos / level.xsize;
   char** map = level.map;
@@ -338,6 +341,7 @@ int weight(action a){
 }
 
 int get_new_pos(int pos, action a, levelinfo level){
+  // Renvoie la position apres avoir effectue une action
   switch(a){
     case NONE:
       return pos;
@@ -360,6 +364,7 @@ int get_new_pos(int pos, action a, levelinfo level){
 }
 
 action get_action(int u, int v, levelinfo level){
+  // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
   int diff = u - v;
 
   if(diff == level.xsize){ // Aurait ete plus joli avec un switch mais level.xsize n'est pas une constante
@@ -406,6 +411,7 @@ levelinfo add_enemies(levelinfo level, character_list characterl, bomb_list bomb
   // Les ennemis et les bombes sont dans des listes chainees, on a besoin que le A* les prenne en compte
   // Pour cela on les ajoute a la map
 
+  // On commence par ajouter les bombes
   bomb_list currentb = bombl;
 
   while(currentb != NULL){
@@ -413,6 +419,7 @@ levelinfo add_enemies(levelinfo level, character_list characterl, bomb_list bomb
     currentb = currentb->next;
   }
 
+  // Puis les ennemis, si un ennemi est sur une case avec une bombe, c'est qu'il est mort
   character_list current = characterl;
 
   while(current != NULL){
@@ -485,6 +492,7 @@ levelinfo get_astar_level(levelinfo level, character_list characterl){
 }
 
 bonus_list get_closest_bonus(bonus_list bonusl, character_list runner, bonus_list already_seen){
+  // On cherche le bonus le plus proche du runner, en evitant ceux deja vus
   bonus_list closest_bonus = NULL;
 
   if(bonusl == NULL){
@@ -506,6 +514,7 @@ bonus_list get_closest_bonus(bonus_list bonusl, character_list runner, bonus_lis
 }
 
 character_list get_closest_enemy(character_list characterl, character_list runner, levelinfo level){
+  // On cherche l'ennemi considere dangereux le plus proche du runner 
   character_list closest_enemy = NULL;
 
   if(characterl == NULL) {
@@ -629,7 +638,7 @@ child* find_closest_child(int* p, int origin, int destination, levelinfo level){
   }
 }
 
-void special_moves(character_list runner, character_list closest_enemy, int* move_to_combat, levelinfo level){
+void combat_moves(character_list runner, character_list closest_enemy, int* move_to_combat, levelinfo level){
   char down_left = level.map[runner->c.y + 1][runner->c.x - 1];
   char down_right = level.map[runner->c.y + 1][runner->c.x + 1];
   char top_left = level.map[runner->c.y - 1][runner->c.x - 1];
@@ -782,7 +791,7 @@ action lode_runner(levelinfo level, character_list characterl, bonus_list bonusl
       printf("ERROR: Path is longer than heap size\n");
       exit(1);
     } else {
-      special_moves(runner, get_closest_enemy(characterl, runner, level), &move_to_combat, level);
+      combat_moves(runner, get_closest_enemy(characterl, runner, level), &move_to_combat, level);
     }
 
     bonus_list tmp = malloc(sizeof(bonus_list));
