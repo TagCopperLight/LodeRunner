@@ -24,6 +24,8 @@ Ce script nous renvoie, pour un niveau donné et un nombre de parties donné, le
 
 Il n'y a pas de défaites pour le niveau 0 et le nombre moyen de déplacements est entier, car n'y a pas d'ennemi, le runner prend toujours le même chemin.
 
+\newpage
+
 \section{Niveau 1}
 
 \subsection{Résultats}
@@ -68,6 +70,8 @@ Or, la solution que trouve notre stratégie est de contourner les ennemis, donc 
 
 Il n'y a pas de défaites pour le niveau 2, pour les mêmes raisons que pour le niveau 1.
 
+\newpage
+
 \section{Niveau 3}
 
 \subsection{Résultats}
@@ -86,7 +90,20 @@ Il n'y a pas de défaites pour le niveau 2, pour les mêmes raisons que pour le 
 
 \subsection{Analyse des défaites}
 
-A faire
+Malgré un pourcentage de victoires élevé, il y a des défaites pour le niveau 3.	Analysons une de ces défaites.
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.5\textwidth]{Figures/level3-over.png}
+    \caption{Défaite pour le niveau 3.}
+    \label{fig:defaite-niveau-3}
+\end{figure}
+
+À cette position, le runner joue \texttt{DOWN}, ce qui le coince entre deux ennemis, l'empêchant d'avoir le temps ou l'espace nécessaire pour utiliser ses bombes. En mode débogage, on constate que c'est le mode de rapprochement qui était activé.
+\newline
+À ce moment, il ne reste qu'un seul bonus, mais il est inatteignable car les ennemis bloquent tous les chemins. Dans ce cas, il est normal que le mode de mouvement spécial soit utilisé. Cependant, le runner aurait dû se diriger vers la droite.
+\newline
+Cette situation résulte d'une erreur : le mode de combat aurait dû être activé.
 
 \newpage
 
@@ -108,7 +125,22 @@ A faire
 
 \subsection{Analyse des défaites}
 
-A faire
+Une des défaites les plus courantes pour le niveau 4 est la suivante :
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Figures/level4-over.png}
+    \caption{Défaite pour le niveau 4.}
+    \label{fig:defaite-niveau-4}
+\end{figure}
+
+À cette position, le runner reste immobile, car il est bloqué entre deux ennemis.
+Pourtant, il aurait pu jouer \texttt{RIGHT} pour se dégager.
+\newline
+Cette erreur provient du mode de mouvement en combat : lorsqu'un combat se déroule sur une échelle, le runner se limite à essayer de monter ou descendre.
+Il aurait dû également envisager de se déplacer vers la gauche ou la droite pour se libérer.
+
+\newpage
 
 \section{Niveau supplémentaire}
 
@@ -117,12 +149,10 @@ Il reprend les mêmes plateformes que le niveau 3, mais avec des ennemis en plus
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=0.5\textwidth]{Figures/level4.png}
+    \includegraphics[width=0.4\textwidth]{Figures/level4.png}
     \caption{Niveau supplémentaire}
     \label{fig:niveau-supplementaire}
 \end{figure}
-
-\newpage
 
 \subsection{Résultats}
 
@@ -140,4 +170,28 @@ Il reprend les mêmes plateformes que le niveau 3, mais avec des ennemis en plus
 
 \subsection{Analyse des défaites}
 
-A faire
+Sur ce dernier niveau, il y a beaucoup de défaites, car il y a beaucoup d'ennemis.
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[width=0.4\textwidth]{Figures/level5-over.png}
+    \caption{Défaite pour le niveau supplémentaire.}
+    \label{fig:defaite-niveau-supplementaire}
+\end{figure}
+
+À cette position, le runner joue \texttt{DOWN}.
+C'est un mouvement de combat qui vise, initialement, à ne pas combattre sur les cables, car on ne peut pas y poser de bombes.
+De plus, il n'y a pas d'ennemi pile en dessous du runner, il joue donc \texttt{DOWN}.
+\newline
+C'est une erreur du mode de mouvement en combat, car le runner aurait dû se déplacer vers la gauche pour éviter les ennemis.
+
+\section{Conclusion et persecpectives d'amélioration}
+
+Notre stratégie a montré de bons résultats sur les premiers niveaux, mais elle a montré ses limites sur les niveaux plus difficiles.
+\newline
+Les erreurs proviennent principalement des modes de mouvement en combat, qui ne prennent pas en compte toutes les possibilités de déplacement.
+\newline
+C'est la limite de notre stratégie : elle ne peut pas prendre en compte toutes les situations possibles.
+Il faudrait trouver un stratégie plus générale, qui ne prennent pas en compte des cas particuliers, mais qui soit capable de s'adapter à toutes les situations.
+\newline
+Je pense qu'estimer la position futures des ennemis et l'utiliser dans A* pourrait être une piste d'amélioration.
