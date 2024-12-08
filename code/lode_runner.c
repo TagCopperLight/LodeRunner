@@ -892,7 +892,7 @@ void game_over_printer(unsigned int seed)
   printf(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
-  printf("Over, Moves: %d, Bombs: %d\n", moves, nb_bombs);
+  printf("Over, Moves: %d, Bombs: %d, Seed: %u\n", moves, nb_bombs, seed);
 }
 
 void congratulations_printer(unsigned int seed)
@@ -909,7 +909,7 @@ void congratulations_printer(unsigned int seed)
   printf("                   |___/                                                     \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
-  printf("Congrats, Moves: %d, Bombs: %d\n", moves, nb_bombs);
+  printf("Congrats, Moves: %d, Bombs: %d, Seed: %u\n", moves, nb_bombs, seed);
 }
 
 void action_printer(action a)
