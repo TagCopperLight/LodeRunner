@@ -34,7 +34,7 @@ Pour cela, on utilise une des deux procédures suivantes : \texttt{percolate\_up
 On ajoute l'élément à la fin du tableau et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un Tas-min.
 La procédure \texttt{percolate\_up} remonte l'élément ajouté tant que son parent a une priorité plus grande que la sienne.
 \newline\newline
-Son pseudo code est le suivant :
+Son pseudo-code est le suivant :
 
 \begin{listing}[!htpb]
     \begin{minted}{text}
@@ -65,7 +65,7 @@ On modifie la priorité de l'élément et on appelle \texttt{percolate\_up} pour
 On récupère l'élément de priorité minimale, on le remplace par le dernier élément du tableau et on appelle \texttt{percolate\_down}.
 La procédure \texttt{percolate\_down} descend l'élément remplacé jusqu'à ce que ses fils aient une priorité plus grande que la sienne.
 \newline\newline
-Son pseudo code est le suivant :
+Son pseudo-code est le suivant :
 
 \begin{listing}[!htpb]
     \begin{minted}{text}
@@ -142,7 +142,7 @@ L'algorithme A* est utilisé pour trouver le chemin le plus court entre un nœud
 Il utilise une file de priorité pour stocker les nœuds à explorer, dans laquelle la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
 On utilisera ici un Tas-min (\autoref{sec:tas-min}) pour implémenter cette file de priorité.
 
-\subsection{Pseudo code}
+\subsection{Pseudo-code}
 
 \begin{longlisting}
     \begin{minted}{text}

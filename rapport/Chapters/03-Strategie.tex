@@ -17,12 +17,15 @@ Ceci veut dire que A* doit prendre en compte les ennemis, mais il y a plusieurs 
     \item Si A* ne trouve pas de chemin, on peut être sûr qu'il n'y en a pas, et on peut donc se permettre de faire des mouvements "spéciaux".
 \end{enumerate}
 Néanmoins, il y a un inconvénient : on ne peut pas prédire l'évolution de la position des ennemis, les choix de A* se basent sur la situation à l'instant $t$.
+\newline
 C'est pour cela qu'on l'appelle à chaque tour, pour prendre en compte les nouvelles positions des ennemis.
 \newline\newline
 Heureusement, l'imprécision de la position des ennemis augmente avec la distance, et leur dangerosité diminue.
 L'algorithme peut être à peu près sûr de la position des ennemis proches (les ennemis dangereux), et donc de les éviter.
-
 \newpage
+De plus, au lieu de passer la carte à A*, on lui passe une carte modifiée, dans laquelle les ennemis sont ajoutés, ainsi qu'une zone d'ennemis autour de chaque ennemi.
+\newline
+Cela permet d'éviter que le runner ne se rapproche à moins d'une case d'un ennemi, et ainsi de s'assurer que, même si le prochain tour est celui des ennemis, le runner ne sera pas en danger.
 
 \begin{figure}[!htpb]
     \centering
@@ -30,6 +33,8 @@ L'algorithme peut être à peu près sûr de la position des ennemis proches (le
     \caption[Logigramme de la stratégie.]{Logigramme de la stratégie.}
     \label{fig:logigramme}
 \end{figure}
+
+\newpage
 
 \section{Mouvements spéciaux}
 
