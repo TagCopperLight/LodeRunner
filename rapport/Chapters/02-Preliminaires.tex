@@ -6,34 +6,32 @@ Avant de commencer à détailler la stratégie utilisée, il est nécessaire de 
 \section{Tas-Min}
 \label{sec:tas-min}
 
-Un tas-min est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. 
-C'est un cas particulier d'une file de priorité, où l'élément avec la plus petite priorité est toujours en tête de file.
+Un Tas-min est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. 
+C'est un cas particulier d'une file de priorité, où l'élément ayant la plus petite priorité est toujours en tête de file.
 \newline\newline
-Notre tas-min est implémenté sous forme d'un tableau d'entiers, où chaque élément est un nœud de l'arbre binaire représentant le tas.
-Les indices des éléments sont choisis de manière à ce que le fils gauche de l'élément à l'indice $i$ soit à l'indice $2i+1$ et le fils droit à l'indice $2i+2$.
+Notre Tas-min est implémenté sous forme d'un tableau d'entiers, où chaque élément est un nœud de l'arbre binaire représentant le tas.
+Les indices des éléments sont choisis de manière à ce que le fils gauche de l'élément à l'indice $i$ soit à l'indice $2i + 1$ et le fils droit à l'indice $2i + 2$.
 La racine de l'arbre est à l'indice 0.
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=\linewidth]{Figures/array.png}
-    \caption[Représentation d'un tas-min sous forme de tableau.]{Représentation d'un tas-min sous forme de tableau.}
+    \includegraphics[width=0.9\linewidth]{Figures/array.png}
+    \caption[Représentation d'un Tas-min sous forme de tableau.]{Représentation d'un Tas-min sous forme de tableau.}
     \label{fig:array}
 \end{figure}
 
-\newpage
-
-Pour gérer les tas-min, nous avons besoin de trois procédures : \texttt{insert}, \texttt{modify\_}
+Pour gérer les Tas-min, nous avons besoin de trois procédures : \texttt{insert}, \texttt{modify\_}
 \newline
 \texttt{priority} et \texttt{extract\_min}.
 La première permet d'ajouter un élément au tas, la deuxième de modifier la priorité d'un élément et la troisième de récupérer l'élément de priorité minimale.
 \newline
 On sait que l'élément de priorité minimale est toujours à la racine de l'arbre, on peut donc le récupérer en temps constant.
-En cas d'insertion, de suppression ou de modification de priorité, on doit s'assurer que le tas reste bien un tas-min.
+En cas d'insertion, de suppression ou de modification de priorité, on doit s'assurer que le tas reste bien un Tas-min.
 Pour cela, on utilise une des deux procédures suivantes : \texttt{percolate\_up} et \texttt{percolate\_down}.
 
 \subsection{Procédure \texttt{insert}}
 
-On ajoute l'élément à la fin du tableau et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un tas-min.
+On ajoute l'élément à la fin du tableau et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un Tas-min.
 La procédure \texttt{percolate\_up} remonte l'élément ajouté tant que son parent a une priorité plus grande que la sienne.
 \newline\newline
 Son pseudo code est le suivant :
@@ -58,7 +56,7 @@ Son pseudo code est le suivant :
 
 \subsection{Procédure \texttt{modify\_priority}}
 
-On modifie la priorité de l'élément et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un tas-min.
+On modifie la priorité de l'élément et on appelle \texttt{percolate\_up} pour s'assurer que le tas reste un Tas-min.
 
 \newpage
 
@@ -100,15 +98,15 @@ Son pseudo code est le suivant :
 
 \subsection{En C}
 
-En C, on utilise une structure \texttt{min\_heap} pour représenter le tas-min.
+En C, on utilise une structure \texttt{min\_heap} pour représenter le Tas-min.
 
 \begin{listing}[!htpb]
     \begin{minted}{c}
         typedef struct min_heap{
-            int size; // Nombre d'elements dans le tas
+            int size; // Nombre d'éléments dans le tas
             int capacity; // Taille max du tas
-            int* array; // Tableau des elements
-            float* priority; // Prioritee des elements
+            int* array; // Tableau des éléments
+            float* priority; // Priorité des éléments
           } min_heap;
     \end{minted}
     \caption{Structure \texttt{min\_heap} en C.}
@@ -117,7 +115,7 @@ En C, on utilise une structure \texttt{min\_heap} pour représenter le tas-min.
 
 \newpage
 
-On dispose en plus des fonctions suivantes pour manipuler les tas-min :
+On dispose en plus des fonctions suivantes pour manipuler les Tas-min :
 
 \begin{listing}[!htpb]
     \begin{minted}{c}
@@ -130,7 +128,7 @@ On dispose en plus des fonctions suivantes pour manipuler les tas-min :
         int extract_min(min_heap*);
         bool is_member(min_heap*, int); 
     \end{minted}
-    \caption{Fonctions sur les tas-min en C.}
+    \caption{Fonctions sur les Tas-min en C.}
     \label{listing:c-min_heap-fonctions}
 \end{listing}
 
@@ -141,8 +139,8 @@ L'algorithme A* est un algorithme de recherche de chemin dans un graphe pondér�
 Il est basé sur l'algorithme de Dijkstra, mais utilise une heuristique pour guider la recherche.
 L'algorithme A* est utilisé pour trouver le chemin le plus court entre un nœud de départ et un nœud d'arrivée dans un graphe.
 \newline
-Il utilise une file de priorité pour stocker les nœuds à explorer, où la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
-On utilisera ici un tas-min (\autoref{sec:tas-min}) pour implémenter cette file de priorité.
+Il utilise une file de priorité pour stocker les nœuds à explorer, dans laquelle la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
+On utilisera ici un Tas-min (\autoref{sec:tas-min}) pour implémenter cette file de priorité.
 
 \subsection{Pseudo code}
 
@@ -176,7 +174,7 @@ On utilisera ici un tas-min (\autoref{sec:tas-min}) pour implémenter cette file
                 Pour chaque action possible
                     Si l'action est valide // Dépend de level
                         v <- position apres l'action
-                        h_v <- distance entre v et le bonus (heuristique)
+                        h_v <- distance entre v et le bonus (l'heuristique)
                         Si pat.d[u] + poids de l'action < pat.d[v]
                             // Si on a trouve un chemin plus court
                             pat.d[v] <- pat.d[u] + poids de l'action
@@ -201,18 +199,18 @@ On utilisera ici un tas-min (\autoref{sec:tas-min}) pour implémenter cette file
 
 \subsection{En C}
 
-En C, la foncion renvoie un chemin, qui est une structure contenant les informations nécessaires pour retrouver le chemin trouvé.
+En C, la fonction renvoie un chemin, qui est une structure contenant les informations nécessaires pour retrouver le chemin trouvé.
 \newline\newline
-On conserve le tableau des distances \texttt{d}, le tableau des parents \texttt{p}, un booléen \texttt{found} indiquant si le chemin a été trouvé et le tas-min \texttt{heap}.
-On garde le tas-min pour les cas où il n'est pas vide (on n'a pas trouvé de chemin) et pour libérer la mémoire.
+On conserve le tableau des distances \texttt{d}, le tableau des parents \texttt{p}, un booléen \texttt{found} indiquant si le chemin a été trouvé et le Tas-min \texttt{heap}.
+On garde le Tas-min pour les cas où il n'est pas vide (on n'a pas trouvé de chemin) et pour libérer la mémoire.
 
 \begin{listing}[!htpb]
     \begin{minted}{c}
         typedef struct path{
-            min_heap* heap; // File de priorite
+            min_heap* heap; // File de priorité
             int* p; // Tableau des parents
             int* d; // Tableau des distances
-            bool found; // Chemin trouve ou non
+            bool found; // Chemin trouvé ou non
             } path;
     \end{minted}
     \caption{Structure \texttt{path} en C.}

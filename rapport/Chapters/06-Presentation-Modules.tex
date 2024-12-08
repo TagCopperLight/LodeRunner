@@ -13,8 +13,8 @@
 
 \subsection{Description}
 
-Dans l'algorithme A*, on a besoin de récupérer touts les voisins d'une case donnée.
-On appelle voisin d'une case, une case atteignable en un seul mouvement possible.
+Dans l'algorithme A*, on a besoin de récupérer tous les voisins d'une case donnée.
+On appelle voisin d'une case une case atteignable en un seul mouvement possible.
 \newline\newline
 La fonction \texttt{is\_valid} prend donc en paramètre une action, et retourne un booléen indiquant si cette action est valide.
 
@@ -196,7 +196,7 @@ De même, la fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on 
 
 \subsection{Description}
 
-Pour que A* prenne en compte les ennemis, et ne tombe pas dans les trous causés par les bombes, on ajoute les ennemis et les bombes à la carte.
+Pour que A* prenne en compte les ennemis, et ne tombe pas dans les trous créés par les bombes, on ajoute les ennemis et les bombes à la carte.
 C'est à dire qu'on créé une nouvelle carte, où les ennemis et les bombes sont des obstacles.
 De plus, si un ennemi est sur une bombe, on considère que l'ennemi est mort, (on peut marcher dessus).
 
@@ -281,7 +281,7 @@ Afin de s'assurer qu'on a les bons type de personnages, on utilise un Si / Sinon
 
 Si A* ne trouve aucun chemin pour aucun bonus, le mode de mouvement spécial est activé.
 Dans ce mode, le runner va essayer de se rapprocher du bonus le plus proche, tout en évitant les ennemis.
-Pour savoir comment se déplacer, si un ennemi est dangeureux, on utilise la procédure \texttt{combat\_moves}.
+Pour savoir comment se déplacer, si un ennemi est dangereux, on utilise la procédure \texttt{combat\_moves}.
 
 
 \subsection{Paramètres}
@@ -307,7 +307,7 @@ Cette procédure est assez complexe, surtout, elle n'a pas été implémentée e
 Cela vient du fait que les mouvements spéciaux sont assez complexes, et qu'il est difficile de tout prévoir dès le début, il faut tester et ajuster.
 J'ai tout de même essayé de faire en sorte que la procédure soit la plus lisible possible, en utilisant des commentaires et des variables explicites.
 On utilise donc des Si / Sinon pour tester les différentes conditions.
-De plus, on utilse une procédure car on modifie le pointeur \texttt{move\_to\_combat} en fonction de sa valeur actuelle.
+De plus, on utilise une procédure car on modifie le pointeur \texttt{move\_to\_combat} en fonction de sa valeur actuelle.
 
 \subsection{Pseudo-code}
 
@@ -349,7 +349,7 @@ De plus, on utilse une procédure car on modifie le pointeur \texttt{move\_to\_c
             can_left <- can_left et (down_left != BOMB et down_left != PATH)
 
             Si closest_enemy != NULL alors
-                // Si il y a un ennemi dangeureux (donc que l'on est en mode combat)
+                // Si il y a un ennemi dangereux (donc que l'on est en mode combat)
                 Si *move_to_combat == -1 alors
                     // Si on n'a pas encore décidé de comment se déplacer
                     distance <- runner->c.y - closest_enemy->c.y // On calcule la distance verticale
@@ -466,7 +466,7 @@ Elle renvoie l'action à effectuer par le runner.
 \subsection{Choix d'implementation}
 
 Le point principal de cette fonction est l'itération sur les bonus.
-Elle est donc centrée autour d'une boucle tant que (les bonnus sont des listes chaînées).
+Elle est donc centrée autour d'une boucle tant que (les bonus sont des listes chaînées).
 On utilise des variables pour stocker les actions à effectuer, et on les retourne à la fin de la fonction.
 
 \subsection{Pseudo-code}
