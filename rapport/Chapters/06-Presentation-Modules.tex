@@ -185,88 +185,6 @@ La fonction \texttt{is\_in\_bonus\_list} fonctionne similairement, on ne la dét
 
 \newpage
 
-\section{Module \texttt{add\_ennemis}}
-
-\begin{listing}[!htpb]
-    \begin{minted}{c}
-        levelinfo add_ennemis(levelinfo level, character_list characterl, bomb_list bombl);
-    \end{minted}
-    \caption{Prototype de \texttt{add\_ennemis} en C.}
-    \label{listing:c-add_ennemis-prototype}
-\end{listing}
-
-\subsection{Description}
-
-Pour que A* prenne en compte les ennemis, et ne tombe pas dans les trous créés par les bombes, on ajoute les ennemis et les bombes à la carte.
-C'est-à-dire qu'on crée une nouvelle carte, où les cases contenant des ennemis sont marquées comme telles.
-De plus, si un ennemi est sur une bombe, on considère que l'ennemi est mort, (on peut marcher dessus).
-
-\subsection{Paramètres}
-
-\begin{table}[!htpb]
-    \begin{tabularx}{\textwidth}{lXX}
-        \toprule
-        \textbf{Paramètre} & \textbf{Type} & \textbf{Description} \\
-        \midrule
-        \texttt{level} & \texttt{levelinfo} & Structure contenant les informations du niveau. \\
-        \texttt{characterl} & \texttt{character\_list} & Liste des personnages. \\
-        \texttt{bombl} & \texttt{bomb\_list} & Liste des bombes. \\
-        \bottomrule
-    \end{tabularx}
-    \caption{Paramètres de la fonction \texttt{add\_ennemis}.}
-    \label{tab:parameters-add_ennemis}
-\end{table}
-
-\subsection{Choix d'Implémentation}
-
-Les listes d'ennemis et de bombes sont des listes chaînées, on choisit donc une boucle tant que pour parcourir ces listes.
-Afin de s'assurer qu'on a les bons type de personnage, on utilise un Si / Sinon.
-
-\subsection{Pseudo-code}
-
-\begin{longlisting}
-    \begin{minted}{text}
-        Fonction add_ennemis en levelinfo
-        Parametres :
-            level en levelinfo
-            characterl en character_list
-            bombl en bomb_list
-        Declarations :
-            currentb en bomb_list
-            current en character_list
-        Debut
-            currentb <- bombl // On initialise currentb à la tête de la liste des bombes
-
-            Tant que currentb != NULL faire
-                // On itère sur les bombes
-                level.map[currentb->y][currentb->x] <- BOMB
-                currentb <- currentb->next // On passe à la bombe suivante
-            Fin Tant que
-
-            current <- characterl // On initialise current à la tête de la liste des personnages
-
-            Tant que current != NULL faire
-                // On itère sur les personnages
-                Si current->c.item == ENEMY alors
-                    // Si le personnage est un ennemi (on pourrait tomber sur le runner)
-                    Si level.map[current->c.y][current->c.x] == BOMB ou level.map[current->c.y][current->c.x] == DEAD alors
-                        level.map[current->c.y][current->c.x] <- DEAD
-                    Sinon
-                        level.map[current->c.y][current->c.x] <- ENEMY
-                    Fin Si
-                Fin Si
-                current <- current->next // On passe au personnage suivant
-            Fin Tant que
-
-            Retourner level
-        Fin
-    \end{minted}
-    \caption{Pseudo-code de la fonction \texttt{add\_ennemis}.}
-    \label{listing:c-add_ennemis}
-\end{longlisting}
-
-\newpage
-
 \section{Module \texttt{combat\_moves}}
 \label{sec:move-to-combat}
 
@@ -309,6 +227,8 @@ J'ai tout de même essayé de faire en sorte que la procédure soit la plus lisi
 \newline\newline
 On utilise donc des Si / Sinon pour tester les différentes conditions.
 De plus, on utilise une procédure car on modifie le pointeur \texttt{move\_to\_combat} en fonction de sa valeur actuelle.
+
+\newpage
 
 \subsection{Pseudo-code}
 
@@ -470,6 +390,8 @@ Le point principal de cette fonction est l'itération sur les bonus.
 Elle est donc centrée autour d'une boucle tant que (les bonus sont des listes chaînées).
 On utilise des variables pour stocker les actions à effectuer, et on les retourne à la fin de la fonction.
 
+\newpage
+
 \subsection{Pseudo-code}
 
 \begin{longlisting}
@@ -512,7 +434,6 @@ On utilise des variables pour stocker les actions à effectuer, et on les retour
                 to_exit <- VRAI
             Fin Si
 
-            // Initialisation des variables
             // Ces variables vont stocker les actions à effectuer, elles sont initialisées à -1 pour qu'on sache si elles ont été modifiées
             move_to_combat <- -1
             move_to_closest <- -1
