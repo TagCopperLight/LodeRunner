@@ -1,7 +1,7 @@
 \chapter{Stratégie}
 \label{cp:strategie}
 
-La stratégie utilisée pour terminer le jeu est construite autour de l'algorithme A*.
+La stratégie utilisée pour terminer le jeu est construite autour de l'algorithme A* (\autoref{sec:a-star}).
 \newline
 On commence par récupérer la liste des bonus par ordre croissant de distance, et on essaye, en utilisant A*, de trouver un chemin pour atteindre le bonus le plus proche.
 \newline
@@ -16,7 +16,7 @@ Ceci veut dire que A* doit prendre en compte les ennemis, mais il y a plusieurs 
     \item On ne fait pas de mouvements inutiles : si A* trouve un chemin, on peut prouver que c'est le chemin le plus court.
     \item Si A* ne trouve pas de chemin, on peut être sûr qu'il n'y en a pas, et on peut donc se permettre de faire des mouvements "spéciaux".
 \end{enumerate}
-Néanmoins, il y a un inconvénient : on ne peut pas prédire l'évolution de la position des ennemis, les choix de l'algorithme A* se basent sur la situation à l'instant $t$.
+Néanmoins, il y a un inconvénient : on ne peut pas prédire l'évolution de la position des ennemis, les choix de A* se basent sur la situation à l'instant $t$.
 C'est pour cela qu'on l'appelle à chaque tour, pour prendre en compte les nouvelles positions des ennemis.
 \newline\newline
 Heureusement, l'imprécision de la position des ennemis augmente avec la distance, et leur dangerosité diminue.
@@ -26,12 +26,10 @@ L'algorithme peut être à peu près sûr de la position des ennemis proches (le
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[width=\linewidth]{Figures/diagramme1.png}
+    \includegraphics[width=0.75\linewidth]{Figures/diagramme2.png}
     \caption[Logigramme de la stratégie.]{Logigramme de la stratégie.}
     \label{fig:logigramme}
 \end{figure}
-
-\newpage
 
 \section{Mouvemements spéciaux}
 

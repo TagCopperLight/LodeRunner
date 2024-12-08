@@ -62,7 +62,7 @@ Ces modules sont indépendants les uns des autres et peuvent être utilisés de 
 % bonus_list get_closest_bonus(bonus_list, character_list, bonus_list); // Renvoie le bonus le plus proche du runner, en evitant ceux deja vus
 % character_list get_closest_enemy(character_list, character_list, levelinfo); // Renvoie l'ennemi le plus proche du runner, sur la meme ligne
 % bool is_valid_closest(int, action, levelinfo); // Verifie si une action est dangereuse, utilisée pour le mode closest
-% void special_moves(character_list, character_list, int*, levelinfo); // Gere toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...)
+% void special_moves(character_list, character_list, int*, levelinfo);
 
 \subsection{Outils}
 
@@ -78,9 +78,9 @@ Ces modules sont indépendants les uns des autres et peuvent être utilisés de 
         \texttt{bool is\_in\_bonus\_list} & Vérifie si un bonus est dans une liste de bonus, on utilise ses coordonnées. \\
         \texttt{levelinfo add\_enemies} & Ajoute les ennemis et les bombes à la carte. \\
         \texttt{bonus\_list get\_closest\_bonus} & Renvoie le bonus le plus proche du runner, en évitant ceux déjà vus. \\
-        \texttt{character\_list get\_closest\_enemy} & Renvoie l'ennemi le plus proche du runner, sur la même ligne. \\
+        \texttt{character\_list get\_closest\_enemy} & Renvoie l'ennemi dangereux le plus proche du runner. \\
         \texttt{bool is\_valid\_closest} & Vérifie si une action est dangereuse, utilisée pour le mode \texttt{closest}. \\
-        \texttt{void special\_moves} & Gère toutes les actions qui sont déterminées par des conditions spéciales (ennemis, ...). \\
+        \texttt{void combat\_moves} & Gère les mouvements de combat. \\
         \bottomrule
     \end{tabularx}
     \caption{Modules relatifs aux outils.}
