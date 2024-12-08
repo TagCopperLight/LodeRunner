@@ -7,7 +7,7 @@ Avant de commencer à détailler la stratégie utilisée, il est nécessaire de 
 \label{sec:tas-min}
 
 Un Tas-min est une structure de données qui permet de stocker un ensemble d'éléments et de les récupérer dans un ordre particulier. 
-C'est un cas particulier d'une file de priorité, où l'élément avec la plus petite priorité est toujours en tête de file.
+C'est un cas particulier d'une file de priorité, où l'élément ayant la plus petite priorité est toujours en tête de file.
 \newline\newline
 Notre Tas-min est implémenté sous forme d'un tableau d'entiers, où chaque élément est un nœud de l'arbre binaire représentant le tas.
 Les indices des éléments sont choisis de manière à ce que le fils gauche de l'élément à l'indice $i$ soit à l'indice $2i + 1$ et le fils droit à l'indice $2i + 2$.
@@ -106,7 +106,7 @@ En C, on utilise une structure \texttt{min\_heap} pour représenter le Tas-min.
             int size; // Nombre d'éléments dans le tas
             int capacity; // Taille max du tas
             int* array; // Tableau des éléments
-            float* priority; // Prioritée des éléments
+            float* priority; // Priorité des éléments
           } min_heap;
     \end{minted}
     \caption{Structure \texttt{min\_heap} en C.}
@@ -139,7 +139,7 @@ L'algorithme A* est un algorithme de recherche de chemin dans un graphe pondér�
 Il est basé sur l'algorithme de Dijkstra, mais utilise une heuristique pour guider la recherche.
 L'algorithme A* est utilisé pour trouver le chemin le plus court entre un nœud de départ et un nœud d'arrivée dans un graphe.
 \newline
-Il utilise une file de priorité pour stocker les nœuds à explorer, où la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
+Il utilise une file de priorité pour stocker les nœuds à explorer, dans laquelle la priorité d'un nœud est la somme du coût du chemin parcouru pour atteindre ce nœud et de l'estimation du coût restant pour atteindre le nœud d'arrivée (l'heuristique). 
 On utilisera ici un Tas-min (\autoref{sec:tas-min}) pour implémenter cette file de priorité.
 
 \subsection{Pseudo code}
@@ -174,7 +174,7 @@ On utilisera ici un Tas-min (\autoref{sec:tas-min}) pour implémenter cette file
                 Pour chaque action possible
                     Si l'action est valide // Dépend de level
                         v <- position apres l'action
-                        h_v <- distance entre v et le bonus (heuristique)
+                        h_v <- distance entre v et le bonus (l'heuristique)
                         Si pat.d[u] + poids de l'action < pat.d[v]
                             // Si on a trouve un chemin plus court
                             pat.d[v] <- pat.d[u] + poids de l'action

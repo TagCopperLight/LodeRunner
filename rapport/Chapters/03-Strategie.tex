@@ -3,7 +3,7 @@
 
 La stratégie utilisée pour terminer le jeu est construite autour de l'algorithme A* (\autoref{sec:a-star}).
 \newline
-On commence par récupérer la liste des bonus par ordre croissant de distance et on essaye, en utilisant A*, de trouver un chemin pour atteindre le bonus le plus proche.
+On commence par récupérer la liste des bonus par ordre croissant de distance, et on essaie, en utilisant A*, de trouver un chemin pour atteindre le bonus le plus proche.
 \newline
 Si on trouve un chemin vers un des bonus, le runner le prendra : A* a une priorité sur toutes les autres décisions.
 \newline
@@ -31,9 +31,9 @@ L'algorithme peut être à peu près sûr de la position des ennemis proches (le
     \label{fig:logigramme}
 \end{figure}
 
-\section{Mouvemements spéciaux}
+\section{Mouvements spéciaux}
 
-Les mouvements spéciaux sont les mouvements effectués quand A* ne trouve aucun chemin, ils tentent, sans garantie de succès, d'améliorer la situation, pour que A* puisse trouver un chemin dans un prochain tour.
+Les mouvements spéciaux sont les mouvements effectués quand A* ne trouve aucun chemin, ils tentent, sans garantie de succès, d'améliorer la situation pour que A* puisse trouver un chemin lors d'un prochain tour.
 \newline
 Ils sont, contrairement à A*, beaucoup plus spécifiques.
 
@@ -53,4 +53,4 @@ On va alors essayer de se rapprocher du bonus, jusqu'à ce que :
 
 \subsection{Remarques}
 
-Il faut faire attention à bien conserver le premier mouvement de combat (et de rapprochement), car on va itérer sur tous les bonus, mais on veut se rapprocher du plus proche (le premier). 
+Il faut faire attention à bien conserver le premier mouvement de combat (et de rapprochement), car on va itérer sur tous les bonus, mais on souhaite se rapprocher du plus proche (le premier). 

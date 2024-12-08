@@ -1,8 +1,8 @@
 \chapter{Modules}
 \label{chap:modules}
 
-La stratégie se décompose en plusieurs modules, chacun ayant un rôle bien défini.
-Ces modules sont indépendants les uns des autres et peuvent être utilisés de manière isolée.
+La stratégie se décompose en plusieurs modules, chacun ayant un rôle spécifique.
+Ces modules sont indépendants les uns des autres et peuvent être utilisés individuellement.
 
 \section{Liste des modules}
 
@@ -46,7 +46,7 @@ Ces modules sont indépendants les uns des autres et peuvent être utilisés de 
         \texttt{int get\_new\_pos} & Renvoie la position après avoir effectué une action. \\
         \texttt{action get\_action} & Renvoie l'action à effectuer pour aller de $u$ à $v$, si ce n'est pas possible, renvoie \texttt{NONE}. \\
         \texttt{path* a\_star} & Renvoie le chemin le plus court entre le runner et le bonus. \\
-        \texttt{child* find\_closest\_child} & Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus. \\
+        \texttt{child* find\_closest\_child} & Si A* ne trouve pas de chemin, on recherche le chemin qui nous rapproche le plus du bonus. \\
         \texttt{action lode\_runner} & Action du lode-runner. \\
         \bottomrule
     \end{tabularx}
