@@ -127,6 +127,8 @@ typedef item_tree_node *item_tree;
 
 int score = 0; // runner score
 bool exit_ok = false;
+int moves = 0;
+int nb_bombs = 0;
 
 void read_parameters(int, char *[], bool *);
 void print_parameters();
@@ -253,6 +255,10 @@ int main(int argc, char *argv[])
           bonusltmp=bonus_list_copy();
           bombltmp=bomb_list_copy();
           a = lode_runner(map_info, characterltmp, bl, bombl);
+          moves++;
+          if (a == BOMB_LEFT || a == BOMB_RIGHT){
+            nb_bombs++;
+          }
           map_free(map_info.map, level.xsize, level.ysize);
           character_list_kill(&characterltmp);
           bonus_list_kill(&bonusltmp);
@@ -886,7 +892,7 @@ void game_over_printer(unsigned int seed)
   printf(" \\____/\\__,_|_| |_| |_|\\___|  \\___/  \\_/ \\___|_|   \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
-  printf("Over, Seed: %u\n", seed);
+  printf("Over, Moves: %d, Bombs: %d\n", moves, nb_bombs);
 }
 
 void congratulations_printer(unsigned int seed)
@@ -903,7 +909,7 @@ void congratulations_printer(unsigned int seed)
   printf("                   |___/                                                     \n");
   if (settings.COLOR)
     printf(ANSI_COLOR_RESET);
-  printf("Congrats, Seed: %u\n", seed);
+  printf("Congrats, Moves: %d, Bombs: %d\n", moves, nb_bombs);
 }
 
 void action_printer(action a)
