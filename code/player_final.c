@@ -74,6 +74,7 @@ bool is_valid(int, action, levelinfo, levelinfo); // Verifie si une action est v
 int weight(action); // Valeur d'une action, utilise pour le calcul de la priorite
 int get_new_pos(int, action, levelinfo); // Renvoie la position apres avoir effectue une action
 action get_action(int, int, levelinfo); // Renvoie l'action a effectuer pour aller de u a v, si ce n'est pas possible, renvoie NONE
+levelinfo get_astar_level(levelinfo, character_list); // Cree une copie du niveau pour le A* avec des zones autour des ennemis
 path* a_star(character_list, bonus_list, levelinfo, levelinfo); // Algorithme de recherche de chemin, renvoie le chemin le plus court entre le runner et le bonus
 child* find_closest_child(int*, int, int, levelinfo); // Si A* ne trouve pas de chemin, on cherche le chemin qui nous rapproche le plus du bonus
 action lode_runner(levelinfo, character_list, bonus_list, bomb_list);
